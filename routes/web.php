@@ -102,6 +102,9 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::get('tournaments/{tournament}/fixtures', [FixtureController::class, 'index'])
             ->middleware('permission:manage tournaments')
             ->name('tournaments.fixtures.index');
+        Route::get('tournaments/{tournament}/fixtures/pdf', [FixtureController::class, 'pdf'])
+            ->middleware('permission:manage tournaments')
+            ->name('tournaments.fixtures.pdf');
         Route::get('tournaments/{tournament}/fixtures/create', [FixtureController::class, 'create'])
             ->middleware('permission:manage tournaments')
             ->name('tournaments.fixtures.create');
@@ -182,6 +185,9 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::post('tournaments/{tournament}/teams/export-captains', [TeamController::class, 'exportTournamentCaptains'])
             ->middleware('permission:manage teams')
             ->name('tournaments.teams.export-captains');
+        Route::get('tournaments/{tournament}/teams/pdf', [TeamController::class, 'pdf'])
+            ->middleware('permission:manage teams')
+            ->name('tournaments.teams.pdf');
 
         Route::get('player-import-template.csv', [PlayerImportController::class, 'template'])
             ->middleware('permission:manage players')
@@ -189,6 +195,9 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::get('tournaments/{tournament}/players', [PlayerApprovalController::class, 'index'])
             ->middleware('permission:manage players')
             ->name('tournaments.players.index');
+        Route::get('tournaments/{tournament}/players/pdf', [PlayerApprovalController::class, 'pdf'])
+            ->middleware('permission:manage players')
+            ->name('tournaments.players.pdf');
         Route::post('tournaments/{tournament}/players/import', [PlayerImportController::class, 'store'])
             ->middleware(['permission:manage players', 'throttle:10,1'])
             ->name('tournaments.players.import');
@@ -214,6 +223,9 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::put('tournaments/{tournament}/draft/setup', [DraftSetupController::class, 'update'])
             ->middleware('permission:configure draft')
             ->name('tournaments.draft.setup.update');
+        Route::get('tournaments/{tournament}/draft/setup/pdf', [DraftSetupController::class, 'pdf'])
+            ->middleware('permission:configure draft')
+            ->name('tournaments.draft.setup.pdf');
         Route::get('tournaments/{tournament}/draft/setup/sample-csv', [DraftSetupController::class, 'downloadSample'])
             ->middleware('permission:configure draft')
             ->name('tournaments.draft.setup.sample-csv');

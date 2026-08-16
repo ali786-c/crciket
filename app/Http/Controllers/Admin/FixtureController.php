@@ -91,4 +91,26 @@ class FixtureController extends Controller
     {
         abort_unless($fixture->tournament_id === $tournament->id, 404);
     }
+
+    public function pdf(Tournament $tournament): \Illuminate\Http\Response
+    {
+        $fixtures = $tournament->fixtures()->with(['homeTeam', 'awayTeam', 'match'])->get();
+        $html = view('reports.fixtures-pdf', [
+            'tournament' => $tournament,
+            'fixtures' => $fixtures,
+            'title' => 'Fixtures & Schedule Report',
+        ])->render();
+
+        $options = new \Dompdf\Options();
+        $options->set('isRemoteEnabled', false);
+        $dompdf = new \Dompdf\Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        return response($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . str()->slug($tournament->slug . '-fixtures') . '.pdf"',
+        ]);
+    }
 }

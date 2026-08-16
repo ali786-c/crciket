@@ -277,4 +277,28 @@ class DraftSetupController extends Controller
 
         return back()->with('status', 'Draft order setup imported successfully via CSV.');
     }
+
+    public function pdf(Tournament $tournament): \Illuminate\Http\Response
+    {
+        $draft = Draft::query()->where('tournament_id', $tournament->id)->firstOrFail();
+        $draft->load('rounds.picks.team');
+
+        $html = view('reports.draft-setup-pdf', [
+            'tournament' => $tournament,
+            'draft' => $draft,
+            'title' => 'Draft Rounds & Picks Config',
+        ])->render();
+
+        $options = new \Dompdf\Options();
+        $options->set('isRemoteEnabled', false);
+        $dompdf = new \Dompdf\Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        return response($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . str()->slug($tournament->slug . '-draft-setup') . '.pdf"',
+        ]);
+    }
 }

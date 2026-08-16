@@ -48,4 +48,26 @@ class PlayerApprovalController extends Controller
     {
         abort_unless($registration->tournament_id === $tournament->id, 404);
     }
+
+    public function pdf(Tournament $tournament): \Illuminate\Http\Response
+    {
+        $registrations = $tournament->tournamentPlayers()->with('playerProfile.user')->latest()->get();
+        $html = view('reports.players-pdf', [
+            'tournament' => $tournament,
+            'registrations' => $registrations,
+            'title' => 'Player Registrations Report',
+        ])->render();
+
+        $options = new \Dompdf\Options();
+        $options->set('isRemoteEnabled', false);
+        $dompdf = new \Dompdf\Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        return response($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . str()->slug($tournament->slug . '-players') . '.pdf"',
+        ]);
+    }
 }

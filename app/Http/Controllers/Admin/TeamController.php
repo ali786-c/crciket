@@ -154,4 +154,25 @@ class TeamController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
+
+    public function pdf(Tournament $tournament): \Illuminate\Http\Response
+    {
+        $tournament->load('teams.activeCaptain.user');
+        $html = view('reports.teams-pdf', [
+            'tournament' => $tournament,
+            'title' => 'Teams & Captains Report',
+        ])->render();
+
+        $options = new \Dompdf\Options();
+        $options->set('isRemoteEnabled', false);
+        $dompdf = new \Dompdf\Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        return response($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . str()->slug($tournament->slug . '-teams') . '.pdf"',
+        ]);
+    }
 }
