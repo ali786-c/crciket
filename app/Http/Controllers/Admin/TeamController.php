@@ -21,12 +21,20 @@ class TeamController extends Controller
             'tournament' => $tournament->load('teams.activeCaptain.user'),
             'captainCandidates' => User::query()
                 ->where(function ($query) use ($tournament) {
-                    $query->whereHas('roles', function ($q) {
-                        $q->where('name', 'captain');
-                    })
-                    ->orWhereHas('playerProfile.tournamentRegistrations', function ($q) use ($tournament) {
+                    $query->whereHas('playerProfile.tournamentRegistrations', function ($q) use ($tournament) {
                         $q->where('tournament_id', $tournament->id)
                           ->where('status', 'approved');
+                    })
+                    ->orWhere(function ($q) use ($tournament) {
+                        $q->whereHas('roles', function ($sub) {
+                            $sub->where('name', 'captain');
+                        })
+                        ->whereDoesntHave('teamCaptainAssignments', function ($sub) use ($tournament) {
+                            $sub->whereNull('revoked_at')
+                                ->whereHas('team', function ($teamQuery) use ($tournament) {
+                                    $teamQuery->where('tournament_id', '<>', $tournament->id);
+                                });
+                        });
                     });
                 })
                 ->orderBy('name')
@@ -49,12 +57,20 @@ class TeamController extends Controller
         $data = $request->validate(['user_id' => ['required', 'integer', 'exists:users,id']]);
         $captain = User::query()
             ->where(function ($query) use ($tournament) {
-                $query->whereHas('roles', function ($q) {
-                    $q->where('name', 'captain');
-                })
-                ->orWhereHas('playerProfile.tournamentRegistrations', function ($q) use ($tournament) {
+                $query->whereHas('playerProfile.tournamentRegistrations', function ($q) use ($tournament) {
                     $q->where('tournament_id', $tournament->id)
                       ->where('status', 'approved');
+                })
+                ->orWhere(function ($q) use ($tournament) {
+                    $q->whereHas('roles', function ($sub) {
+                        $sub->where('name', 'captain');
+                    })
+                    ->whereDoesntHave('teamCaptainAssignments', function ($sub) use ($tournament) {
+                        $sub->whereNull('revoked_at')
+                            ->whereHas('team', function ($teamQuery) use ($tournament) {
+                                $teamQuery->where('tournament_id', '<>', $tournament->id);
+                            });
+                    });
                 });
             })
             ->findOrFail($data['user_id']);
