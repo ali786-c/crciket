@@ -201,6 +201,12 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::post('tournaments/{tournament}/players/import', [PlayerImportController::class, 'store'])
             ->middleware(['permission:manage players', 'throttle:10,1'])
             ->name('tournaments.players.import');
+        Route::post('tournaments/{tournament}/players', [PlayerApprovalController::class, 'store'])
+            ->middleware('permission:manage players')
+            ->name('tournaments.players.store');
+        Route::put('tournaments/{tournament}/players/{tournamentPlayer}', [PlayerApprovalController::class, 'update'])
+            ->middleware('permission:manage players')
+            ->name('tournaments.players.update');
         Route::get('tournaments/{tournament}/audit-logs', [AuditLogController::class, 'index'])
             ->middleware('permission:control draft')
             ->name('tournaments.audit-logs.index');

@@ -20,8 +20,96 @@
                 <div class="col-6 col-lg-2"><div class="cricket-surface p-3 h-100"><div class="small text-secondary"><?php echo e($label); ?></div><div class="cricket-stat-value mt-2"><?php echo e($report['summary'][$key]); ?></div></div></div>
             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         </div>
-        <div class="cricket-surface p-4 p-lg-5 mb-4"><div class="d-flex align-items-center justify-content-between gap-3 mb-4"><div><p class="cricket-kicker mb-2">Download center</p><h2 class="h3 fw-bold mb-1">Operational reports</h2><p class="text-secondary mb-0">Each PDF contains the complete admin-level data for its category.</p></div><i class="fa-solid fa-file-pdf text-danger fs-2"></i></div><div class="row g-3"><?php $__currentLoopData = $reportTypes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $type => $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><div class="col-md-6 col-lg-4"><div class="cricket-surface-soft p-3 d-flex align-items-center justify-content-between gap-3"><div><div class="fw-bold"><?php echo e($label); ?></div><div class="small text-secondary">PDF download</div></div><a href="<?php echo e(route('admin.tournaments.reports.pdf', [$report['tournament'], $type])); ?>" class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-download me-1"></i>PDF</a></div></div><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?></div></div>
-        <div class="row g-4"><div class="col-xl-7"><div class="cricket-surface p-4 h-100"><h2 class="h4 fw-bold mb-3">Team squads</h2><div class="vstack gap-3"><?php $__currentLoopData = $report['team_squads']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $squad): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><div class="cricket-surface-soft p-3"><div class="d-flex justify-content-between align-items-center mb-3"><strong><?php echo e($squad['team']); ?></strong><span class="badge text-bg-success"><?php echo e($squad['selected_count']); ?> selected</span></div><div class="vstack gap-2"><?php $__empty_1 = true; $__currentLoopData = $squad['players']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $player): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><div class="bg-white rounded-3 p-2 d-flex align-items-center justify-content-between gap-2"><div class="d-flex align-items-center gap-2"><span class="badge text-bg-light">#<?php echo e($player['pick_number']); ?></span><div class="fw-bold"><?php echo e($player['player']); ?></div><?php if($player['is_captain'] ?? false): ?><span class="badge text-bg-warning ms-1" style="font-size: 0.75rem; padding: 0.2em 0.5em;"><i class="fa-solid fa-copyright me-1"></i>Captain</span><?php endif; ?></div><div class="small text-secondary d-flex align-items-center"><?php if(($player['playing_role'] ?? '') === 'Batter'): ?><i class="fa-solid fa-baseball-bat-ball text-success me-1" title="Batter"></i><?php elseif(($player['playing_role'] ?? '') === 'Bowler'): ?><i class="fa-solid fa-baseball text-danger me-1" title="Bowler"></i><?php elseif(($player['playing_role'] ?? '') === 'All-rounder'): ?><i class="fa-solid fa-bolt text-warning me-1" title="All-rounder"></i><?php elseif(($player['playing_role'] ?? '') === 'Wicketkeeper'): ?><i class="fa-solid fa-hand-back-fist text-info me-1" title="Wicketkeeper"></i><?php else: ?><i class="fa-solid fa-user text-secondary me-1" title="Player"></i><?php endif; ?><?php echo e($player['playing_role'] ?: 'Unassigned'); ?></div></div><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><div class="small text-secondary">No players selected yet.</div><?php endif; ?></div></div><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?></div></div></div><div class="col-xl-5"><div class="cricket-surface p-4 h-100"><h2 class="h4 fw-bold mb-3">Timer health</h2><div class="vstack gap-3"><?php $__currentLoopData = $report['timer']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><div class="d-flex justify-content-between border-bottom pb-2"><span class="text-secondary"><?php echo e(ucwords(str_replace('_',' ',$key))); ?></span><strong><?php echo e($value); ?></strong></div><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?></div></div></div></div>
+        <div class="row g-4 mb-4">
+            <div class="col-xl-8">
+                <div class="cricket-surface p-4 p-lg-5 h-100">
+                    <div class="d-flex align-items-center justify-content-between gap-3 mb-4">
+                        <div>
+                            <p class="cricket-kicker mb-2">Download center</p>
+                            <h2 class="h3 fw-bold mb-1">Operational reports</h2>
+                            <p class="text-secondary mb-0">Each PDF contains the complete admin-level data for its category.</p>
+                        </div>
+                        <i class="fa-solid fa-file-pdf text-danger fs-2"></i>
+                    </div>
+                    <div class="row g-3">
+                        <?php $__currentLoopData = $reportTypes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $type => $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <div class="col-md-6">
+                                <div class="cricket-surface-soft p-3 d-flex align-items-center justify-content-between gap-3 h-100">
+                                    <div>
+                                        <div class="fw-bold"><?php echo e($label); ?></div>
+                                        <div class="small text-secondary">PDF download</div>
+                                    </div>
+                                    <a href="<?php echo e(route('admin.tournaments.reports.pdf', [$report['tournament'], $type])); ?>" class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-download me-1"></i>PDF</a>
+                                </div>
+                            </div>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4">
+                <div class="cricket-surface p-4 h-100">
+                    <h2 class="h4 fw-bold mb-3">Timer health</h2>
+                    <div class="vstack gap-3">
+                        <?php $__currentLoopData = $report['timer']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <div class="d-flex justify-content-between border-bottom pb-2">
+                                <span class="text-secondary"><?php echo e(ucwords(str_replace('_',' ',$key))); ?></span>
+                                <strong><?php echo e($value); ?></strong>
+                            </div>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="cricket-surface p-4 p-lg-5">
+                    <h2 class="h3 fw-bold mb-4">Team squads</h2>
+                    <div class="row g-3">
+                        <?php $__currentLoopData = $report['team_squads']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $squad): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <div class="col-md-6 col-lg-4 col-xl-3">
+                                <div class="cricket-surface-soft p-3 h-100">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <strong class="text-truncate" style="max-width: 70%"><?php echo e($squad['team']); ?></strong>
+                                        <span class="badge text-bg-success"><?php echo e($squad['selected_count']); ?></span>
+                                    </div>
+                                    <div class="vstack gap-2">
+                                        <?php $__empty_1 = true; $__currentLoopData = $squad['players']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $player): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                                            <div class="bg-white rounded-3 p-2">
+                                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                                    <span class="badge text-bg-light" style="font-size: 0.75rem;">#<?php echo e($player['pick_number']); ?></span>
+                                                    <?php if($player['is_captain'] ?? false): ?>
+                                                        <span class="badge text-bg-warning" style="font-size: 0.65rem; padding: 0.2em 0.5em;"><i class="fa-solid fa-copyright me-1"></i>C</span>
+                                                    <?php endif; ?>
+                                                </div>
+                                                <div class="fw-bold small text-truncate" title="<?php echo e($player['player']); ?>"><?php echo e($player['player']); ?></div>
+                                                <div class="small text-secondary d-flex align-items-center mt-1" style="font-size: 0.75rem;">
+                                                    <?php if(($player['playing_role'] ?? '') === 'Batter'): ?>
+                                                        <i class="fa-solid fa-baseball-bat-ball text-success me-1" title="Batter"></i>
+                                                    <?php elseif(($player['playing_role'] ?? '') === 'Bowler'): ?>
+                                                        <i class="fa-solid fa-baseball text-danger me-1" title="Bowler"></i>
+                                                    <?php elseif(($player['playing_role'] ?? '') === 'All-rounder'): ?>
+                                                        <i class="fa-solid fa-bolt text-warning me-1" title="All-rounder"></i>
+                                                    <?php elseif(($player['playing_role'] ?? '') === 'Wicketkeeper'): ?>
+                                                        <i class="fa-solid fa-hand-back-fist text-info me-1" title="Wicketkeeper"></i>
+                                                    <?php else: ?>
+                                                        <i class="fa-solid fa-user text-secondary me-1" title="Player"></i>
+                                                    <?php endif; ?>
+                                                    <?php echo e($player['playing_role'] ?: 'Unassigned'); ?>
+
+                                                </div>
+                                            </div>
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                                            <div class="small text-secondary text-center py-3">No players selected yet.</div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
  <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
