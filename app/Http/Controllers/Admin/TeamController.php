@@ -110,4 +110,48 @@ class TeamController extends Controller
 
         return back()->with('status', 'Team removed successfully.');
     }
+
+    public function exportTournamentCaptains(Tournament $tournament): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $captains = User::query()
+            ->whereHas('teamCaptainAssignments', function ($query) use ($tournament) {
+                $query->whereNull('revoked_at')
+                    ->whereHas('team', function ($sub) use ($tournament) {
+                        $sub->where('tournament_id', $tournament->id);
+                    });
+            })
+            ->get();
+
+        $captainsData = [];
+
+        foreach ($captains as $captain) {
+            $newPassword = 'CD-' . rand(10000, 99999);
+            $captain->update([
+                'password' => \Illuminate\Support\Facades\Hash::make($newPassword)
+            ]);
+            $captainsData[] = [
+                'name' => $captain->name,
+                'email' => $captain->email,
+                'password' => $newPassword,
+            ];
+        }
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="tournament_' . $tournament->slug . '_captains.csv"',
+        ];
+
+        $callback = function () use ($captainsData) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['Name', 'Email', 'Password']);
+
+            foreach ($captainsData as $row) {
+                fputcsv($file, $row);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }

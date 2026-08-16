@@ -179,6 +179,9 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::delete('tournaments/{tournament}/teams/{team}', [TeamController::class, 'destroy'])
             ->middleware('permission:manage teams')
             ->name('tournaments.teams.destroy');
+        Route::post('tournaments/{tournament}/teams/export-captains', [TeamController::class, 'exportTournamentCaptains'])
+            ->middleware('permission:manage teams')
+            ->name('tournaments.teams.export-captains');
 
         Route::get('player-import-template.csv', [PlayerImportController::class, 'template'])
             ->middleware('permission:manage players')
