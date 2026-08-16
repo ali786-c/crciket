@@ -1,0 +1,4 @@
+<x-app-layout>
+    <x-slot name="header"><div class="d-flex flex-column flex-lg-row align-items-lg-end justify-content-between gap-3"><div><p class="cricket-kicker mb-2">Schedule management</p><h1 class="display-6 fw-bold mb-2">Create fixture</h1><p class="text-secondary mb-0">{{ $tournament->name }} · Schedule the next competition match.</p></div><a href="{{ route('admin.tournaments.fixtures.index', $tournament) }}" class="btn btn-light"><i class="fa-solid fa-arrow-left me-2"></i>Schedule</a></div></x-slot>
+    <div class="container pb-5"><div class="mb-4"><p class="cricket-kicker mb-1">Fixture details</p><h2 class="h3 fw-bold mb-1">Set the match appointment</h2><p class="text-secondary mb-0">Both teams must be active members of this tournament.</p></div>@include('admin.fixtures._form', ['action' => route('admin.tournaments.fixtures.store', $tournament), 'method' => 'POST'])</div>
+</x-app-layout>

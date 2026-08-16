@@ -1,0 +1,19 @@
+<x-app-layout>
+    <x-slot name="header"><div class="d-flex flex-column flex-lg-row align-items-lg-end justify-content-between gap-3"><div><p class="cricket-kicker mb-2">Player workspace</p><h1 class="display-6 fw-bold mb-2">Find your next tournament.</h1><p class="text-secondary mb-0">Complete your profile, register once, and let the admin prepare the room.</p></div><a href="{{ route('player.profile.edit') }}" class="btn btn-light"><i class="fa-solid fa-user-pen me-2"></i>Edit player profile</a></div></x-slot>
+
+    <div class="container pb-5">
+        @if (session('status'))<div class="alert alert-success border-0 shadow-sm">{{ session('status') }}</div>@endif
+        @if (! $profile)<div class="cricket-pitch-panel p-4 mb-4 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3"><div class="d-flex align-items-center gap-3"><span class="fs-2" style="color:var(--cricket-lime);"><i class="fa-solid fa-id-card"></i></span><div><div class="fw-bold">Your player profile is incomplete</div><div class="small text-white-50">Add your playing details before registering for a tournament.</div></div></div><a href="{{ route('player.profile.edit') }}" class="btn" style="background:var(--cricket-lime); color:var(--cricket-pitch-deep);">Complete profile <i class="fa-solid fa-arrow-right ms-2"></i></a></div>@endif
+        <div class="d-flex align-items-center justify-content-between gap-3 mb-4"><div><p class="cricket-kicker mb-2">Open registration</p><h2 class="h3 fw-bold mb-1">Tournaments accepting players</h2><p class="text-secondary mb-0">Choose where you want to be considered.</p></div><span class="badge text-bg-light">{{ $tournaments->count() }} available</span></div>
+        <div class="row g-4">
+            @forelse ($tournaments as $tournament)
+                @php
+                    $registrationStatus = $registrations[$tournament->id] ?? null;
+                @endphp
+                <div class="col-md-6 col-xl-4"><div class="cricket-surface p-4 h-100 d-flex flex-column"><div class="d-flex justify-content-between align-items-start gap-3 mb-4"><span class="cricket-brand-mark"><i class="fa-solid fa-trophy"></i></span><span class="badge text-bg-light">{{ ucfirst($tournament->status) }}</span></div><h3 class="h4 fw-bold mb-2">{{ $tournament->name }}</h3><p class="small text-secondary mb-4"><i class="fa-solid fa-location-dot me-1"></i>{{ $tournament->location ?: 'Location to be announced' }}</p><div class="cricket-surface-soft p-3 mb-4"><div class="d-flex justify-content-between small"><span class="text-secondary">Squad size</span><strong>{{ $tournament->squad_size }} players</strong></div><div class="d-flex justify-content-between small mt-2"><span class="text-secondary">Draft timer</span><strong>{{ $tournament->default_pick_duration }} sec</strong></div></div><div class="mt-auto">@if ($registrationStatus)<div class="d-flex align-items-center justify-content-between"><span class="small text-secondary">Your application</span><span class="badge {{ $registrationStatus === 'approved' ? 'text-bg-success' : ($registrationStatus === 'rejected' ? 'text-bg-danger' : 'text-bg-warning') }}">{{ ucfirst($registrationStatus) }}</span></div>@else<form method="POST" action="{{ route('player.tournaments.register', $tournament) }}">@csrf<button class="btn btn-success w-100" type="submit" @disabled(! $profile)>Register for tournament <i class="fa-solid fa-arrow-right ms-2"></i></button></form>@endif</div></div></div>
+            @empty
+                <div class="col-12"><div class="cricket-surface p-5 text-center"><span class="cricket-brand-mark mb-4"><i class="fa-solid fa-calendar-xmark"></i></span><h3 class="h4 fw-bold">No tournaments are open right now</h3><p class="text-secondary mb-0">Check back when an administrator opens the next registration window.</p></div></div>
+            @endforelse
+        </div>
+    </div>
+</x-app-layout>

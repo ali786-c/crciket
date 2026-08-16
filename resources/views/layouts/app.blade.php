@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{{ config('app.name', 'Cricket Draft System') }}</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+<body>
+    @php
+        $user = auth()->user();
+    @endphp
+    <nav class="navbar navbar-expand-lg cricket-topbar sticky-top">
+        <div class="container py-2 py-lg-3">
+            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="{{ $user?->hasRole('super_admin') ? route('super-admin.dashboard') : ($user?->hasRole('admin') ? route('admin.dashboard') : ($user?->hasRole('captain') ? route('captain.dashboard') : ($user?->hasRole('player') ? route('player.tournaments.index') : route('dashboard')))) }}">
+                <span class="cricket-brand-mark"><i class="fa-solid fa-baseball"></i></span>
+                <span class="d-none d-sm-inline">Cricket Draft <span class="text-success">OS</span></span>
+            </a>
+
+            <div class="d-flex align-items-center gap-2 gap-lg-3 ms-auto">
+                @if ($user?->hasRole('super_admin'))
+                    <div class="dropdown d-lg-none">
+                        <button class="btn btn-sm btn-light" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Open navigation"><i class="fa-solid fa-bars"></i></button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                            <li><a class="dropdown-item" href="{{ route('super-admin.dashboard') }}"><i class="fa-solid fa-shield-halved me-2 text-success"></i>Control plane</a></li>
+                            <li><a class="dropdown-item" href="{{ route('super-admin.users.index') }}"><i class="fa-solid fa-users-gear me-2 text-success"></i>Users and roles</a></li>
+                            <li><a class="dropdown-item" href="{{ route('super-admin.tournaments.index') }}"><i class="fa-solid fa-trophy me-2 text-success"></i>Tournament fleet</a></li>
+                            <li><a class="dropdown-item" href="{{ route('super-admin.api-clients.index') }}"><i class="fa-solid fa-plug me-2 text-success"></i>API clients</a></li>
+                            <li><a class="dropdown-item" href="{{ route('super-admin.api-sessions.index') }}"><i class="fa-solid fa-mobile-screen-button me-2 text-success"></i>API sessions</a></li>
+                            <li><a class="dropdown-item" href="{{ route('super-admin.audit-logs.index') }}"><i class="fa-solid fa-clock-rotate-left me-2 text-success"></i>Audit logs</a></li>
+                            <li><a class="dropdown-item" href="{{ route('super-admin.health') }}"><i class="fa-solid fa-heart-pulse me-2 text-success"></i>System health</a></li>
+                        </ul>
+                    </div>
+                    <div class="d-none d-lg-flex align-items-center gap-1">
+                        <a href="{{ route('super-admin.dashboard') }}" class="btn btn-sm {{ request()->routeIs('super-admin.dashboard') ? 'btn-success' : 'btn-light' }}"><i class="fa-solid fa-shield-halved me-1"></i>Control plane</a>
+                        <a href="{{ route('super-admin.users.index') }}" class="btn btn-sm {{ request()->routeIs('super-admin.users.*') ? 'btn-success' : 'btn-light' }}"><i class="fa-solid fa-users-gear me-1"></i>Users</a>
+                        <a href="{{ route('super-admin.tournaments.index') }}" class="btn btn-sm {{ request()->routeIs('super-admin.tournaments.*') ? 'btn-success' : 'btn-light' }}"><i class="fa-solid fa-trophy me-1"></i>Fleet</a>
+                        <a href="{{ route('super-admin.api-clients.index') }}" class="btn btn-sm {{ request()->routeIs('super-admin.api-clients.*') || request()->routeIs('super-admin.api-sessions.*') ? 'btn-success' : 'btn-light' }}"><i class="fa-solid fa-plug me-1"></i>API</a>
+                        <a href="{{ route('super-admin.audit-logs.index') }}" class="btn btn-sm {{ request()->routeIs('super-admin.audit-logs.*') || request()->routeIs('super-admin.health') ? 'btn-success' : 'btn-light' }}"><i class="fa-solid fa-shield-halved me-1"></i>Security</a>
+                    </div>
+                @elseif ($user?->hasRole('admin'))
+                    <div class="dropdown d-lg-none">
+                        <button class="btn btn-sm btn-light" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Open navigation"><i class="fa-solid fa-bars"></i></button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                            <li><a class="dropdown-item" href="{{ route('admin.dashboard') }}"><i class="fa-solid fa-grid-2 me-2 text-success"></i>Overview</a></li>
+                            <li><a class="dropdown-item" href="{{ route('admin.tournaments.index') }}"><i class="fa-solid fa-trophy me-2 text-success"></i>Tournaments</a></li>
+                            <li><a class="dropdown-item" href="{{ route('admin.users.index') }}"><i class="fa-solid fa-users-gear me-2 text-success"></i>Users</a></li>
+                        </ul>
+                    </div>
+                    <div class="d-none d-lg-flex align-items-center gap-1">
+                        <a href="{{ route('admin.dashboard') }}" class="btn btn-sm {{ request()->routeIs('admin.dashboard') ? 'btn-success' : 'btn-light' }}"><i class="fa-solid fa-grid-2 me-1"></i>Overview</a>
+                        <a href="{{ route('admin.tournaments.index') }}" class="btn btn-sm {{ request()->routeIs('admin.tournaments.*') ? 'btn-success' : 'btn-light' }}"><i class="fa-solid fa-trophy me-1"></i>Tournaments</a>
+                        <a href="{{ route('admin.users.index') }}" class="btn btn-sm {{ request()->routeIs('admin.users.*') ? 'btn-success' : 'btn-light' }}"><i class="fa-solid fa-users-gear me-1"></i>Users</a>
+                    </div>
+                @elseif ($user?->hasRole('captain'))
+                    <a href="{{ route('captain.dashboard') }}" class="btn btn-sm btn-light"><i class="fa-solid fa-shield-halved me-1"></i><span class="d-none d-sm-inline">Captain workspace</span><span class="d-sm-none">Workspace</span></a>
+                @elseif ($user?->hasRole('player'))
+                    <a href="{{ route('player.tournaments.index') }}" class="btn btn-sm btn-light"><i class="fa-solid fa-trophy me-1"></i>Tournaments</a>
+                @endif
+
+                <div class="vr d-none d-sm-block"></div>
+                <div class="d-none d-md-block text-end">
+                    <div class="small fw-bold">{{ $user?->name }}</div>
+                    <div class="text-secondary" style="font-size: .68rem; text-transform: uppercase; letter-spacing: .1em;">{{ $user?->getRoleNames()->first() ?: 'Member' }}</div>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-light rounded-circle p-0" style="width: 2.35rem; height: 2.35rem;" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Account menu">
+                        <span class="fw-bold text-success">{{ strtoupper(substr($user?->name ?? 'U', 0, 1)) }}</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                        <li><span class="dropdown-item-text small text-secondary">Signed in as {{ $user?->email }}</span></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ route('profile.edit') }}"><i class="fa-solid fa-user-pen me-2 text-success"></i>Profile</a></li>
+                        <li><form method="POST" action="{{ route('logout') }}">@csrf<button type="submit" class="dropdown-item text-danger"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i>Log out</button></form></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    @isset($header)
+        <header class="cricket-page-header py-4 py-lg-5">
+            <div class="container">{{ $header }}</div>
+        </header>
+    @endisset
+
+    <main>
+        @yield('content')
+        @isset($slot)
+            {{ $slot }}
+        @endisset
+    </main>
+</body>
+</html>
