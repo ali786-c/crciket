@@ -20,12 +20,14 @@ class TeamController extends Controller
         return view('admin.tournaments.teams', [
             'tournament' => $tournament->load('teams.activeCaptain.user'),
             'captainCandidates' => User::query()
-                ->whereHas('roles', function ($query) {
-                    $query->where('name', 'captain');
-                })
-                ->orWhereHas('playerProfile.tournamentRegistrations', function ($query) use ($tournament) {
-                    $query->where('tournament_id', $tournament->id)
+                ->where(function ($query) use ($tournament) {
+                    $query->whereHas('roles', function ($q) {
+                        $q->where('name', 'captain');
+                    })
+                    ->orWhereHas('playerProfile.tournamentRegistrations', function ($q) use ($tournament) {
+                        $q->where('tournament_id', $tournament->id)
                           ->where('status', 'approved');
+                    });
                 })
                 ->orderBy('name')
                 ->get(),
@@ -46,12 +48,14 @@ class TeamController extends Controller
 
         $data = $request->validate(['user_id' => ['required', 'integer', 'exists:users,id']]);
         $captain = User::query()
-            ->whereHas('roles', function ($query) {
-                $query->where('name', 'captain');
-            })
-            ->orWhereHas('playerProfile.tournamentRegistrations', function ($query) use ($tournament) {
-                $query->where('tournament_id', $tournament->id)
+            ->where(function ($query) use ($tournament) {
+                $query->whereHas('roles', function ($q) {
+                    $q->where('name', 'captain');
+                })
+                ->orWhereHas('playerProfile.tournamentRegistrations', function ($q) use ($tournament) {
+                    $q->where('tournament_id', $tournament->id)
                       ->where('status', 'approved');
+                });
             })
             ->findOrFail($data['user_id']);
 
