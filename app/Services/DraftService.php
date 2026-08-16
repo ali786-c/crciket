@@ -520,6 +520,47 @@ class DraftService
         });
     }
 
+    public function resetDraft(Draft $draft, User $actor): Draft
+    {
+        return $this->database->transaction(function () use ($draft, $actor) {
+            $draft = Draft::query()->lockForUpdate()->findOrFail($draft->id);
+
+            if (! $actor->can('control draft')) {
+                $this->fail('draft', 'You are not authorized to reset the draft.');
+            }
+
+            $before = $draft->toArray();
+
+            $draft->picks()->update([
+                'status' => 'pending',
+                'tournament_player_id' => null,
+                'selected_by' => null,
+                'selected_at' => null,
+                'started_at' => null,
+                'skipped_at' => null,
+            ]);
+
+            $draft->rounds()->update([
+                'status' => 'pending',
+                'started_at' => null,
+                'completed_at' => null,
+            ]);
+
+            $minPickNum = $draft->picks()->min('pick_number') ?: 1;
+
+            $draft->update([
+                'status' => 'setup',
+                'current_pick_number' => $minPickNum,
+                'pick_started_at' => null,
+                'revision' => $draft->revision + 1,
+            ]);
+
+            $this->audit($actor, $draft, 'draft.reset', $before, $draft->fresh()->toArray());
+
+            return $draft->fresh(['picks.team', 'picks.round']);
+        });
+    }
+
     public function state(Draft $draft, ?User $viewer = null): array
     {
         $draft->loadMissing([

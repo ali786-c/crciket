@@ -155,4 +155,12 @@ class DraftController extends Controller
 
         return response()->json($this->draftService->state($draft, request()->user()));
     }
+
+    public function reset(Tournament $tournament): JsonResponse
+    {
+        $draft = $tournament->draft()->firstOrFail();
+        $draft = $this->draftService->resetDraft($draft, request()->user());
+
+        return response()->json($this->draftService->state($draft, request()->user()));
+    }
 }
