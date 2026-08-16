@@ -47,13 +47,7 @@
                     <td>{{ $team->short_name ?: '—' }}</td>
                     <td>{{ $team->display_order }}</td>
                     <td>{{ $team->activeCaptain?->user?->name ?: 'No Captain Assigned' }}</td>
-                    <td>
-                        @if ($team->activeCaptain?->user?->email && !str_contains($team->activeCaptain->user->email, '@imported.cricketdraft.local'))
-                            {{ $team->activeCaptain->user->email }}
-                        @else
-                            —
-                        @endif
-                    </td>
+                    <td>{{ $team->activeCaptain?->user?->email ?: '—' }}</td>
                 </tr>
             @endforeach
         </tbody>

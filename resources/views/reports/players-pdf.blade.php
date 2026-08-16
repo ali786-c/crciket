@@ -44,13 +44,7 @@
                     <td>{{ $index + 1 }}</td>
                     <td><strong>{{ $registration->playerProfile?->full_name }}</strong></td>
                     <td>{{ $registration->playerProfile?->playing_role ?: '—' }}</td>
-                    <td>
-                        @if ($registration->playerProfile?->user?->email && !str_contains($registration->playerProfile->user->email, '@imported.cricketdraft.local'))
-                            {{ $registration->playerProfile->user->email }}
-                        @else
-                            —
-                        @endif
-                    </td>
+                    <td>{{ $registration->playerProfile?->user?->email ?: '—' }}</td>
                     <td>
                         @if ($registration->status === 'approved')
                             <span style="color: #0d5c3a; font-weight: bold;">Approved</span>

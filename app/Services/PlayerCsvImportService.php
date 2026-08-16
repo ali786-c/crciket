@@ -37,9 +37,23 @@ class PlayerCsvImportService
                     $user->update(['name' => $row['full_name']]);
                 } else {
                     $created++;
+                    $baseEmail = Str::slug($row['full_name'], '.');
+                    $cleanPhone = preg_replace('/[^0-9]/', '', $row['phone']);
+                    $phoneSuffix = substr($cleanPhone, -4);
+                    if ($phoneSuffix !== '') {
+                        $baseEmail .= '.' . $phoneSuffix;
+                    }
+                    $email = $baseEmail . '@cricketdraft.local';
+
+                    $counter = 1;
+                    while (User::query()->where('email', $email)->exists()) {
+                        $email = $baseEmail . '.' . $counter . '@cricketdraft.local';
+                        $counter++;
+                    }
+
                     $user = User::create([
                         'name' => $row['full_name'],
-                        'email' => 'player+'.Str::uuid().'@imported.cricketdraft.local',
+                        'email' => $email,
                         'password' => Str::random(40),
                     ]);
                 }
