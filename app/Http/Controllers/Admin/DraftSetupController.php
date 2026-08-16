@@ -36,7 +36,7 @@ class DraftSetupController extends Controller
 
         foreach ($payload['rounds'] as $round) {
             foreach ($round['picks'] as $pick) {
-                if (! in_array($pick['team_id'], $teamIds, true)) {
+                if (! in_array((int) $pick['team_id'], $teamIds, true)) {
                     throw ValidationException::withMessages([
                         'rounds' => 'Every assigned team must belong to this tournament.',
                     ]);

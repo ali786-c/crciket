@@ -19,7 +19,16 @@ class TeamController extends Controller
     {
         return view('admin.tournaments.teams', [
             'tournament' => $tournament->load('teams.activeCaptain.user'),
-            'captainCandidates' => User::query()->role('captain')->orderBy('name')->get(),
+            'captainCandidates' => User::query()
+                ->whereHas('roles', function ($query) {
+                    $query->where('name', 'captain');
+                })
+                ->orWhereHas('playerProfile.tournamentRegistrations', function ($query) use ($tournament) {
+                    $query->where('tournament_id', $tournament->id)
+                          ->where('status', 'approved');
+                })
+                ->orderBy('name')
+                ->get(),
         ]);
     }
 
@@ -36,7 +45,15 @@ class TeamController extends Controller
         abort_if($tournament->draft?->status !== null && $tournament->draft?->status !== 'setup', 409, 'Captain assignments cannot be changed after the draft starts.');
 
         $data = $request->validate(['user_id' => ['required', 'integer', 'exists:users,id']]);
-        $captain = User::query()->role('captain')->findOrFail($data['user_id']);
+        $captain = User::query()
+            ->whereHas('roles', function ($query) {
+                $query->where('name', 'captain');
+            })
+            ->orWhereHas('playerProfile.tournamentRegistrations', function ($query) use ($tournament) {
+                $query->where('tournament_id', $tournament->id)
+                      ->where('status', 'approved');
+            })
+            ->findOrFail($data['user_id']);
 
         $alreadyAssigned = TeamCaptain::query()
             ->where('user_id', $captain->id)
@@ -55,6 +72,10 @@ class TeamController extends Controller
                 'user_id' => $captain->id,
                 'assigned_at' => now(),
             ]);
+
+            if (! $captain->hasRole('captain')) {
+                $captain->assignRole('captain');
+            }
         });
 
         return back()->with('status', 'Captain assigned successfully.');
