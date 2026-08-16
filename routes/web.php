@@ -85,6 +85,12 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::delete('users/{user}/captain', [UserController::class, 'revokeCaptain'])
             ->middleware('permission:manage users')
             ->name('users.revoke-captain');
+        Route::post('users/export-captains', [UserController::class, 'exportCaptains'])
+            ->middleware('permission:manage users')
+            ->name('users.export-captains');
+        Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword'])
+            ->middleware('permission:manage users')
+            ->name('users.reset-password');
 
         Route::resource('tournaments', TournamentController::class)
             ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])

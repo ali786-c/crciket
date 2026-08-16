@@ -63,4 +63,53 @@ class UserController extends Controller
 
         return back()->with('status', "Captain role revoked from {$user->name}.");
     }
+
+    public function exportCaptains(): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $captains = User::role('captain')->get();
+        $captainsData = [];
+
+        foreach ($captains as $captain) {
+            $newPassword = 'CD-' . rand(10000, 99999);
+            $captain->update([
+                'password' => Hash::make($newPassword)
+            ]);
+            $captainsData[] = [
+                'name' => $captain->name,
+                'email' => $captain->email,
+                'password' => $newPassword,
+            ];
+        }
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="captain_credentials.csv"',
+        ];
+
+        $callback = function () use ($captainsData) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['Name', 'Email', 'Password']);
+
+            foreach ($captainsData as $row) {
+                fputcsv($file, $row);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function resetPassword(Request $request, User $user): RedirectResponse
+    {
+        $validated = $request->validate([
+            'password' => ['required', 'string', 'min:6'],
+        ]);
+
+        $user->update([
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        return back()->with('status', "Password for {$user->name} updated successfully.");
+    }
 }
