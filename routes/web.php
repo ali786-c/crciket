@@ -269,6 +269,9 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::post('tournaments/{tournament}/draft/undo', [DraftController::class, 'undo'])
             ->middleware(['permission:undo latest pick', 'throttle:30,1'])
             ->name('tournaments.draft.undo');
+        Route::post('tournaments/{tournament}/draft/reset', [DraftController::class, 'reset'])
+            ->middleware(['permission:control draft', 'throttle:30,1'])
+            ->name('tournaments.draft.reset');
     });
 
 Route::middleware(['auth', 'verified', 'role:super_admin'])->prefix('super-admin')->name('super-admin.')->group(function () {
