@@ -19,7 +19,7 @@ class ReportService
             'picks.selectedBy',
             'rounds.picks',
         ])->first();
-        $teams = $tournament->teams()->orderBy('display_order')->get();
+        $teams = $tournament->teams()->with('activeCaptain')->orderBy('display_order')->get();
         $picks = $draft?->picks ?? collect();
         $selectedPicks = $picks->where('status', 'selected')->values();
 
@@ -35,12 +35,15 @@ class ReportService
         ])->values();
 
         $teamSquads = $teams->map(function ($team) use ($selectedPicks): array {
+            $captainUserId = $team->activeCaptain?->user_id;
+
             $players = $selectedPicks
                 ->where('team_id', $team->id)
                 ->map(fn ($pick): array => [
                     'pick_number' => $pick->pick_number,
                     'player' => $pick->tournamentPlayer?->playerProfile?->full_name,
                     'playing_role' => $pick->tournamentPlayer?->playerProfile?->playing_role,
+                    'is_captain' => $pick->tournamentPlayer?->playerProfile?->user_id === $captainUserId,
                     'selected_at' => $pick->selected_at?->toIso8601String(),
                 ])->values();
 
