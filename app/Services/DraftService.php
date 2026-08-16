@@ -639,6 +639,7 @@ class DraftService
                 'id' => $player->id,
                 'full_name' => $player->playerProfile?->full_name,
                 'playing_role' => $player->playerProfile?->playing_role,
+                'city' => $player->playerProfile?->city,
             ])->values()
             : collect();
         $remainingPlayerPayload = $isAdminViewer ? $availablePlayerPayload : collect();
@@ -660,6 +661,7 @@ class DraftService
                         'pick_number' => $pick->pick_number,
                         'full_name' => $pick->tournamentPlayer?->playerProfile?->full_name,
                         'playing_role' => $pick->tournamentPlayer?->playerProfile?->playing_role,
+                        'city' => $pick->tournamentPlayer?->playerProfile?->city,
                         'selected_at' => $pick->selected_at?->toISOString(),
                     ])
                     ->values();
@@ -731,7 +733,7 @@ class DraftService
                 'round' => $pick->round?->round_number,
                 'status' => $pick->status,
                 'team' => $pick->team?->only(['id', 'name', 'short_name']),
-                'player' => $pick->tournamentPlayer?->playerProfile?->only(['id', 'full_name', 'playing_role']),
+                'player' => $pick->tournamentPlayer?->playerProfile?->only(['id', 'full_name', 'playing_role', 'city']),
             ])->values(),
         ];
     }
