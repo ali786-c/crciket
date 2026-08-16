@@ -211,6 +211,12 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::put('tournaments/{tournament}/draft/setup', [DraftSetupController::class, 'update'])
             ->middleware('permission:configure draft')
             ->name('tournaments.draft.setup.update');
+        Route::get('tournaments/{tournament}/draft/setup/sample-csv', [DraftSetupController::class, 'downloadSample'])
+            ->middleware('permission:configure draft')
+            ->name('tournaments.draft.setup.sample-csv');
+        Route::post('tournaments/{tournament}/draft/setup/import-csv', [DraftSetupController::class, 'importCsv'])
+            ->middleware('permission:configure draft')
+            ->name('tournaments.draft.setup.import-csv');
 
         Route::get('tournaments/{tournament}/draft', [DraftController::class, 'show'])
             ->middleware('permission:control draft')
