@@ -55,16 +55,6 @@ class TeamController extends Controller
             })
             ->findOrFail($data['user_id']);
 
-        $alreadyAssigned = TeamCaptain::query()
-            ->where('user_id', $captain->id)
-            ->whereNull('revoked_at')
-            ->whereHas('team', fn ($query) => $query->where('tournament_id', $tournament->id)->where('teams.id', '<>', $team->id))
-            ->exists();
-
-        if ($alreadyAssigned) {
-            return back()->withErrors(['user_id' => 'This captain is already assigned to another team in this tournament.']);
-        }
-
         DB::transaction(function () use ($team, $captain) {
             $team->captainAssignments()->whereNull('revoked_at')->update(['revoked_at' => now()]);
             TeamCaptain::create([

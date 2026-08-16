@@ -209,4 +209,13 @@ class TournamentController extends Controller
     {
         return array_values(array_diff(array_keys($this->statusOptions()), [$status]));
     }
+
+    public function destroy(Tournament $tournament): RedirectResponse
+    {
+        $tournament->delete();
+
+        return redirect()
+            ->route('admin.tournaments.index')
+            ->with('status', 'Tournament deleted successfully.');
+    }
 }

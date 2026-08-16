@@ -37,7 +37,7 @@ class TeamCaptainTest extends TestCase
         $this->assertNotNull(TeamCaptain::query()->where('team_id', $team->id)->first()->revoked_at);
     }
 
-    public function test_a_captain_cannot_be_assigned_to_two_teams_in_one_tournament(): void
+    public function test_a_captain_can_be_assigned_to_two_teams_in_one_tournament(): void
     {
         $admin = User::factory()->create();
         $admin->assignRole('admin');
@@ -47,10 +47,10 @@ class TeamCaptainTest extends TestCase
         $firstTeam = Team::create(['tournament_id' => $tournament->id, 'name' => 'First XI', 'display_order' => 1]);
         $secondTeam = Team::create(['tournament_id' => $tournament->id, 'name' => 'Second XI', 'display_order' => 2]);
 
-        $this->actingAs($admin)->post(route('admin.tournaments.teams.captain.assign', [$tournament, $firstTeam]), ['user_id' => $captain->id]);
+        $this->actingAs($admin)->post(route('admin.tournaments.teams.captain.assign', [$tournament, $firstTeam]), ['user_id' => $captain->id])->assertRedirect();
         $response = $this->actingAs($admin)->post(route('admin.tournaments.teams.captain.assign', [$tournament, $secondTeam]), ['user_id' => $captain->id]);
 
-        $response->assertSessionHasErrors('user_id');
-        $this->assertDatabaseMissing('team_captains', ['team_id' => $secondTeam->id, 'user_id' => $captain->id]);
+        $response->assertRedirect();
+        $this->assertDatabaseHas('team_captains', ['team_id' => $secondTeam->id, 'user_id' => $captain->id, 'revoked_at' => null]);
     }
 }

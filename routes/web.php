@@ -87,7 +87,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])
             ->name('users.revoke-captain');
 
         Route::resource('tournaments', TournamentController::class)
-            ->only(['index', 'create', 'store', 'show', 'edit', 'update'])
+            ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])
             ->middleware('permission:manage tournaments');
         Route::post('tournaments/{tournament}/status', [TournamentController::class, 'transition'])
             ->middleware('permission:manage tournaments')
