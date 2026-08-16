@@ -283,9 +283,16 @@ class DraftSetupController extends Controller
         $draft = Draft::query()->where('tournament_id', $tournament->id)->firstOrFail();
         $draft->load('rounds.picks.team');
 
+        $logoDataUri = null;
+        if ($tournament->logo_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($tournament->logo_path)) {
+            $mime = \Illuminate\Support\Facades\Storage::disk('public')->mimeType($tournament->logo_path) ?: 'image/png';
+            $logoDataUri = 'data:'.$mime.';base64,'.base64_encode(\Illuminate\Support\Facades\Storage::disk('public')->get($tournament->logo_path));
+        }
+
         $html = view('reports.draft-setup-pdf', [
             'tournament' => $tournament,
             'draft' => $draft,
+            'logoDataUri' => $logoDataUri,
             'title' => 'Draft Rounds & Picks Config',
         ])->render();
 

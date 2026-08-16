@@ -17,10 +17,16 @@
     </style>
 </head>
 <body>
+    <div style="margin-bottom: 15px;">
+        @if(isset($logoDataUri) && $logoDataUri)
+            <img src="{{ $logoDataUri }}" style="width: 52px; height: 52px; object-fit: contain; vertical-align: middle; margin-right: 10px;">
+        @endif
+        <span style="font-size: 17px; font-weight: bold; color: #075c46; vertical-align: middle;">{{ $tournament->name }}</span>
+    </div>
     <h1>Draft Rounds & Picks Configuration</h1>
     <div class="meta">
-        <strong>{{ $tournament->name }}</strong><br>
-        <span class="muted">Generated {{ now()->format('d M Y H:i') }}</span>
+        @if($tournament->season_name)<strong>{{ $tournament->season_name }}</strong><br>@endif
+        <span class="muted">{{ $tournament->venue ?: $tournament->location ?: 'Tournament report' }}{{ $tournament->city ? ', '.$tournament->city : '' }} · Generated {{ now()->format('d M Y H:i') }}</span>
     </div>
     
     @foreach ($draft->rounds as $round)

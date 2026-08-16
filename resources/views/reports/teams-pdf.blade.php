@@ -17,15 +17,21 @@
     </style>
 </head>
 <body>
+    <div style="margin-bottom: 15px;">
+        @if(isset($logoDataUri) && $logoDataUri)
+            <img src="{{ $logoDataUri }}" style="width: 52px; height: 52px; object-fit: contain; vertical-align: middle; margin-right: 10px;">
+        @endif
+        <span style="font-size: 17px; font-weight: bold; color: #075c46; vertical-align: middle;">{{ $tournament->name }}</span>
+    </div>
     <h1>Teams & Captains</h1>
     <div class="meta">
-        <strong>{{ $tournament->name }}</strong><br>
-        <span class="muted">Generated {{ now()->format('d M Y H:i') }}</span>
+        @if($tournament->season_name)<strong>{{ $tournament->season_name }}</strong><br>@endif
+        <span class="muted">{{ $tournament->venue ?: $tournament->location ?: 'Tournament report' }}{{ $tournament->city ? ', '.$tournament->city : '' }} · Generated {{ now()->format('d M Y H:i') }}</span>
     </div>
     <table>
         <thead>
             <tr>
-                <th>#</th>
+                <th style="width: 5%;">#</th>
                 <th>Team Name</th>
                 <th>Short Name</th>
                 <th>Display Order</th>
@@ -41,7 +47,13 @@
                     <td>{{ $team->short_name ?: '—' }}</td>
                     <td>{{ $team->display_order }}</td>
                     <td>{{ $team->activeCaptain?->user?->name ?: 'No Captain Assigned' }}</td>
-                    <td>{{ $team->activeCaptain?->user?->email ?: '—' }}</td>
+                    <td>
+                        @if ($team->activeCaptain?->user?->email && !str_contains($team->activeCaptain->user->email, '@imported.cricketdraft.local'))
+                            {{ $team->activeCaptain->user->email }}
+                        @else
+                            —
+                        @endif
+                    </td>
                 </tr>
             @endforeach
         </tbody>

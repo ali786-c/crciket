@@ -95,9 +95,17 @@ class FixtureController extends Controller
     public function pdf(Tournament $tournament): \Illuminate\Http\Response
     {
         $fixtures = $tournament->fixtures()->with(['homeTeam', 'awayTeam', 'match'])->get();
+
+        $logoDataUri = null;
+        if ($tournament->logo_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($tournament->logo_path)) {
+            $mime = \Illuminate\Support\Facades\Storage::disk('public')->mimeType($tournament->logo_path) ?: 'image/png';
+            $logoDataUri = 'data:'.$mime.';base64,'.base64_encode(\Illuminate\Support\Facades\Storage::disk('public')->get($tournament->logo_path));
+        }
+
         $html = view('reports.fixtures-pdf', [
             'tournament' => $tournament,
             'fixtures' => $fixtures,
+            'logoDataUri' => $logoDataUri,
             'title' => 'Fixtures & Schedule Report',
         ])->render();
 

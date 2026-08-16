@@ -158,8 +158,16 @@ class TeamController extends Controller
     public function pdf(Tournament $tournament): \Illuminate\Http\Response
     {
         $tournament->load('teams.activeCaptain.user');
+
+        $logoDataUri = null;
+        if ($tournament->logo_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($tournament->logo_path)) {
+            $mime = \Illuminate\Support\Facades\Storage::disk('public')->mimeType($tournament->logo_path) ?: 'image/png';
+            $logoDataUri = 'data:'.$mime.';base64,'.base64_encode(\Illuminate\Support\Facades\Storage::disk('public')->get($tournament->logo_path));
+        }
+
         $html = view('reports.teams-pdf', [
             'tournament' => $tournament,
+            'logoDataUri' => $logoDataUri,
             'title' => 'Teams & Captains Report',
         ])->render();
 
