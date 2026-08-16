@@ -604,7 +604,7 @@ class DraftService
 
         $captainCanPick = false;
         if ($viewer && $activePick) {
-            $captainCanPick = $activePick->team->activeCaptain?->user_id === $viewer->id && $draft->status === 'live';
+            $captainCanPick = $activePick->team?->activeCaptain?->user_id === $viewer->id && $draft->status === 'live';
         }
         $captainTeam = null;
         if ($viewer && $viewer->can('make draft pick')) {
