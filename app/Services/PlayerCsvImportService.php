@@ -30,7 +30,11 @@ class PlayerCsvImportService
             $updated = 0;
             $registrations = 0;
             foreach ($rows as $row) {
-                $profile = PlayerProfile::query()->with('user')->where('phone', $row['phone'])->first();
+                $profile = PlayerProfile::query()
+                    ->with('user')
+                    ->where('phone', $row['phone'])
+                    ->where('full_name', $row['full_name'])
+                    ->first();
                 $user = $profile?->user;
                 if ($user) {
                     $updated++;

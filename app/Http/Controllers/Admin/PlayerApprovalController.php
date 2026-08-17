@@ -155,7 +155,11 @@ class PlayerApprovalController extends Controller
         ]);
 
         \Illuminate\Support\Facades\DB::transaction(function () use ($tournament, $data) {
-            $profile = \App\Models\PlayerProfile::query()->with('user')->where('phone', $data['phone'])->first();
+            $profile = \App\Models\PlayerProfile::query()
+                ->with('user')
+                ->where('phone', $data['phone'])
+                ->where('full_name', $data['full_name'])
+                ->first();
             $user = $profile?->user;
             if ($user) {
                 $user->update(['name' => $data['full_name']]);
@@ -273,5 +277,22 @@ class PlayerApprovalController extends Controller
         $tournamentPlayer->delete();
 
         return back()->with('status', 'Player removed from the tournament successfully.');
+    }
+
+    public function destroyAll(Tournament $tournament): RedirectResponse
+    {
+        $hasPicks = $tournament->tournamentPlayers()
+            ->whereHas('draftPicks', function ($q) {
+                $q->whereNotNull('tournament_player_id');
+            })
+            ->exists();
+
+        if ($hasPicks) {
+            return back()->withErrors(['status' => 'Cannot delete all players because some players have already been picked in the draft.']);
+        }
+
+        $tournament->tournamentPlayers()->delete();
+
+        return back()->with('status', 'All players have been successfully removed from this tournament.');
     }
 }
