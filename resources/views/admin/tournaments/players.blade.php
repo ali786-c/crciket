@@ -44,10 +44,10 @@
                 <div class="p-5 text-center">
                     <span class="cricket-brand-mark mb-4"><i class="fa-solid fa-user-check"></i></span>
                     @if($currentSearch || $currentLocation)
-                        <h3 class="h4 fw-bold text-white">No players match the criteria</h3>
+                        <h3 class="h4 fw-bold text-dark">No players match the criteria</h3>
                         <p class="text-secondary mb-0">Try adjusting your filters or search query.</p>
                     @else
-                        <h3 class="h4 fw-bold text-white">The queue is clear</h3>
+                        <h3 class="h4 fw-bold text-dark">The queue is clear</h3>
                         <p class="text-secondary mb-0">No player registrations are waiting for review.</p>
                     @endif
                 </div>
@@ -60,19 +60,19 @@
                                     <div class="d-flex align-items-center gap-3">
                                         <span class="cricket-brand-mark flex-shrink-0"><i class="fa-solid fa-user"></i></span>
                                         <div>
-                                            <div class="fw-bold text-white">{{ $registration->playerProfile?->full_name }}</div>
+                                            <div class="fw-bold text-dark">{{ $registration->playerProfile?->full_name }}</div>
                                             <div class="small text-secondary">{{ $registration->playerProfile?->user?->email }}</div>
-                                            <div class="small text-white-50 mt-1"><i class="fa-solid fa-phone me-1"></i>{{ $registration->playerProfile?->phone ?: 'No phone' }}</div>
+                                            <div class="small text-muted mt-1"><i class="fa-solid fa-phone me-1"></i>{{ $registration->playerProfile?->phone ?: 'No phone' }}</div>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-6 col-lg-2">
                                     <div class="small text-secondary mb-1">Playing role</div>
-                                    <div class="fw-bold text-white">{{ $registration->playerProfile?->playing_role ?: 'Not set' }}</div>
+                                    <div class="fw-bold text-dark">{{ $registration->playerProfile?->playing_role ?: 'Not set' }}</div>
                                 </div>
                                 <div class="col-6 col-lg-2">
                                     <div class="small text-secondary mb-1">City</div>
-                                    <div class="fw-bold text-white">{{ $registration->playerProfile?->city ?: 'Not set' }}</div>
+                                    <div class="fw-bold text-dark">{{ $registration->playerProfile?->city ?: 'Not set' }}</div>
                                 </div>
                                 <div class="col-6 col-lg-2">
                                     <div class="small text-secondary mb-1">Status</div>
