@@ -194,18 +194,18 @@
                                         :class="state.captain_can_pick ? 'btn-success text-white active-glow border-success' : 'btn-white text-dark bg-white border-secondary-subtle'"
                                         @click="confirmPick(player)" 
                                         :disabled="!state.captain_can_pick || loading"
-                                        style="transition: all 0.2s;">
-                                    <span class="d-flex align-items-center gap-3">
+                                        style="transition: all 0.2s; white-space: normal; overflow: hidden;">
+                                    <span class="d-flex align-items-center gap-3 w-100">
                                         <!-- Visual Role Icon Box -->
                                         <span class="cricket-brand-mark flex-shrink-0 d-flex align-items-center justify-content-center bg-light text-dark shadow-sm" style="width: 2.75rem; height: 2.75rem; border-radius: 12px; font-size: 1.35rem;">
                                             <span x-text="player.playing_role === 'Batter' ? '🏏' : (player.playing_role === 'Bowler' ? '🥎' : (player.playing_role === 'All-rounder' ? '⚡' : (player.playing_role === 'Wicketkeeper' ? '🧤' : '👤')))"></span>
                                         </span>
                                         <!-- Player Details -->
-                                        <span class="flex-grow-1 min-w-0">
+                                        <span class="flex-grow-1 min-w-0" style="overflow: hidden;">
                                             <span class="d-block fw-bold text-truncate" :class="state.captain_can_pick ? 'text-white' : 'text-dark'" style="font-size: 1.05rem;" x-text="player.full_name"></span>
                                             <span class="d-block small text-truncate" :class="state.captain_can_pick ? 'text-white-50' : 'text-secondary'" x-text="`${player.playing_role || 'Unassigned'}${player.city ? ' · ' + player.city : ''}`"></span>
                                         </span>
-                                        <i class="fa-solid fa-square-plus fs-4" :class="state.captain_can_pick ? 'text-white' : 'text-success'"></i>
+                                        <i class="fa-solid fa-square-plus fs-4 flex-shrink-0" :class="state.captain_can_pick ? 'text-white' : 'text-success'"></i>
                                     </span>
                                 </button>
                             </div>
