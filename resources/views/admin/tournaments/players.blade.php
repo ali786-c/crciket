@@ -5,17 +5,17 @@
         <div class="cricket-surface p-3 p-lg-4 mb-4"><div class="row align-items-center g-4"><div class="col-lg-7"><p class="cricket-kicker mb-1">Bulk onboarding & Manual Entry</p><h3 class="h4 fw-bold mb-2">Add players to pool</h3><p class="text-secondary mb-0">Upload a CSV template or add a player manually. Existing players are matched by phone number instead of duplicated.</p></div><div class="col-lg-5"><div class="d-flex flex-wrap justify-content-lg-end gap-2 mb-3"><button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createPlayerModal"><i class="fa-solid fa-plus me-2"></i>Add Player Manually</button><a href="{{ route('admin.players.import.template') }}" class="btn btn-outline-primary"><i class="fa-solid fa-download me-2"></i>Download demo CSV</a></div><form method="POST" action="{{ route('admin.tournaments.players.import', $tournament) }}" enctype="multipart/form-data" class="d-flex flex-column flex-sm-row gap-2">@csrf<input type="file" name="players_csv" accept=".csv,text/csv" class="form-control" required><button class="btn btn-outline-success flex-shrink-0" type="submit"><i class="fa-solid fa-upload me-2"></i>Upload CSV</button></form></div></div><div class="small text-secondary mt-3">Required columns: <code>full_name, phone, location, playing_role</code>. Supported roles: Batter, Bowler, All-rounder, Wicketkeeper. Maximum 500 rows per upload.</div></div>
         <div class="cricket-surface p-3 p-lg-4">
             <!-- Filter Bar -->
-            <form method="GET" action="{{ route('admin.tournaments.players.index', $tournament) }}" class="row g-2 mb-4 align-items-end text-white">
+            <form method="GET" action="{{ route('admin.tournaments.players.index', $tournament) }}" class="row g-2 mb-4 align-items-end">
                 <div class="col-md-4">
                     <label for="search" class="form-label small fw-bold text-secondary">Search by Name</label>
                     <div class="input-group">
-                        <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fa-solid fa-magnifying-glass"></i></span>
-                        <input type="text" name="search" id="search" class="form-control bg-dark text-white border-secondary" placeholder="Type player name..." value="{{ $currentSearch }}">
+                        <span class="input-group-text bg-light text-secondary"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <input type="text" name="search" id="search" class="form-control" placeholder="Type player name..." value="{{ $currentSearch }}">
                     </div>
                 </div>
                 <div class="col-md-3">
                     <label for="location" class="form-label small fw-bold text-secondary">Location</label>
-                    <select name="location" id="location" class="form-select bg-dark text-white border-secondary">
+                    <select name="location" id="location" class="form-select">
                         <option value="">All Locations</option>
                         @foreach($locations as $loc)
                             <option value="{{ $loc }}" @selected($currentLocation === $loc)>{{ $loc }}</option>
@@ -24,7 +24,7 @@
                 </div>
                 <div class="col-md-3">
                     <label for="sort" class="form-label small fw-bold text-secondary">Sort by</label>
-                    <select name="sort" id="sort" class="form-select bg-dark text-white border-secondary">
+                    <select name="sort" id="sort" class="form-select">
                         <option value="latest" @selected($currentSort === 'latest')>Latest Joined</option>
                         <option value="name_asc" @selected($currentSort === 'name_asc')>Name: A to Z</option>
                         <option value="name_desc" @selected($currentSort === 'name_desc')>Name: Z to A</option>
