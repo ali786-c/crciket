@@ -182,6 +182,15 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::delete('tournaments/{tournament}/teams/{team}', [TeamController::class, 'destroy'])
             ->middleware('permission:manage teams')
             ->name('tournaments.teams.destroy');
+        Route::get('tournaments/{tournament}/teams/{team}/players', [TeamController::class, 'managePlayers'])
+            ->middleware('permission:manage teams')
+            ->name('tournaments.teams.players.index');
+        Route::post('tournaments/{tournament}/teams/{team}/players', [TeamController::class, 'addPlayer'])
+            ->middleware('permission:manage teams')
+            ->name('tournaments.teams.players.store');
+        Route::delete('tournaments/{tournament}/teams/{team}/players/{draftPick}', [TeamController::class, 'removePlayer'])
+            ->middleware('permission:manage teams')
+            ->name('tournaments.teams.players.destroy');
         Route::post('tournaments/{tournament}/teams/export-captains', [TeamController::class, 'exportTournamentCaptains'])
             ->middleware('permission:manage teams')
             ->name('tournaments.teams.export-captains');
