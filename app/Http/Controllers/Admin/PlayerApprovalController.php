@@ -12,9 +12,66 @@ class PlayerApprovalController extends Controller
 {
     public function index(Tournament $tournament): View
     {
+        $query = $tournament->tournamentPlayers()
+            ->with(['playerProfile.user'])
+            ->select('tournament_players.*')
+            ->join('player_profiles', 'tournament_players.player_profile_id', '=', 'player_profiles.id');
+
+        // Search by name
+        if (request()->filled('search')) {
+            $search = request('search');
+            $query->where('player_profiles.full_name', 'like', '%' . $search . '%');
+        }
+
+        // Filter by location (city)
+        if (request()->filled('location')) {
+            $location = request('location');
+            $query->where('player_profiles.city', $location);
+        }
+
+        // Sorting
+        $sort = request('sort', 'latest');
+        switch ($sort) {
+            case 'name_asc':
+                $query->orderBy('player_profiles.full_name', 'asc');
+                break;
+            case 'name_desc':
+                $query->orderBy('player_profiles.full_name', 'desc');
+                break;
+            case 'location_asc':
+                $query->orderBy('player_profiles.city', 'asc');
+                break;
+            case 'location_desc':
+                $query->orderBy('player_profiles.city', 'desc');
+                break;
+            case 'latest':
+            default:
+                $query->orderBy('tournament_players.created_at', 'desc');
+                break;
+        }
+
+        // Get unique locations of players registered in this tournament
+        $locations = \App\Models\PlayerProfile::query()
+            ->whereHas('tournamentRegistrations', function ($q) use ($tournament) {
+                $q->where('tournament_id', $tournament->id);
+            })
+            ->whereNotNull('city')
+            ->where('city', '!=', '')
+            ->distinct()
+            ->pluck('city')
+            ->sort()
+            ->values();
+
+        // Paginate and preserve query string parameters
+        $registrations = $query->paginate(20)->withQueryString();
+
         return view('admin.tournaments.players', [
             'tournament' => $tournament,
-            'registrations' => $tournament->tournamentPlayers()->with('playerProfile.user')->latest()->paginate(20),
+            'registrations' => $registrations,
+            'locations' => $locations,
+            'currentSearch' => request('search'),
+            'currentLocation' => request('location'),
+            'currentSort' => $sort,
         ]);
     }
 

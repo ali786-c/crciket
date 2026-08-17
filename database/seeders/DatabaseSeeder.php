@@ -26,5 +26,17 @@ class DatabaseSeeder extends Seeder
             'password' => 'password',
         ]);
         $superAdmin->assignRole('super_admin');
+
+        \App\Models\ApiClient::firstOrCreate(
+            ['slug' => 'cricket-app-android'],
+            [
+                'name' => 'Android App',
+                'platform' => 'android',
+                'version' => '1.0.0',
+                'rate_limit_per_minute' => 60,
+                'is_active' => true,
+                'created_by' => $superAdmin->id,
+            ]
+        );
     }
 }

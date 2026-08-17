@@ -179,5 +179,17 @@ class DemoTournamentSeeder extends Seeder
                 'started_at' => $index === 0 ? now() : null,
             ]);
         }
+
+        \App\Models\ApiClient::firstOrCreate(
+            ['slug' => 'cricket-app-android'],
+            [
+                'name' => 'Android App',
+                'platform' => 'android',
+                'version' => '1.0.0',
+                'rate_limit_per_minute' => 60,
+                'is_active' => true,
+                'created_by' => $superAdmin->id,
+            ]
+        );
     }
 }
