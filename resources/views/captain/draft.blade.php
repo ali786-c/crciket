@@ -1,4 +1,7 @@
 <x-app-layout>
+    <!-- Load Canvas Confetti Library from jsDelivr CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
     <style>
         @keyframes pulse-glow {
             0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.7); }
@@ -7,6 +10,40 @@
         }
         .active-glow {
             animation: pulse-glow 1.5s infinite ease-in-out;
+        }
+        
+        /* Stamp celebration overlay */
+        .celebration-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            width: 320px;
+            max-width: 90vw;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            border-radius: 20px;
+            border: 4px solid #198754 !important;
+            background: #ffffff;
+            text-align: center;
+            padding: 24px;
+        }
+        
+        .drafted-stamp {
+            display: inline-block;
+            border: 6px double #dc3545 !important;
+            color: #dc3545;
+            font-weight: 900;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-transform: uppercase;
+            font-family: 'Courier New', Courier, monospace;
+            transform: rotate(-10deg);
+            margin: 16px 0;
+            font-size: 1.15rem;
+            letter-spacing: 1px;
+            line-height: 1.2;
+            box-shadow: 0 0 5px rgba(220, 53, 69, 0.1);
         }
     </style>
 
@@ -29,7 +66,33 @@
 
     <div class="container pb-5" x-data="captainDraft(@js($state), @js(route('captain.draft.state', $tournament)), @js(route('captain.draft.pick', $tournament)))" x-init="init()">
         
-        <!-- Live Turn Notification Bar (Crucial for Mobile & illiterate users) -->
+        <!-- Stamp Celebration Overlay Pop-up -->
+        <div x-show="showCelebration" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 scale-75"
+             x-transition:enter-end="opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-75"
+             class="celebration-overlay">
+            
+            <div class="mb-2">
+                <span class="fs-1">🎉</span>
+            </div>
+            
+            <p class="cricket-kicker text-success mb-1 fw-bold text-uppercase" style="font-size: 0.75rem;">Player Selected / Naya Khiladi!</p>
+            <h3 class="fw-bold text-dark mb-1" x-text="lastPickedPlayerName"></h3>
+            
+            <!-- Red double-border stamp -->
+            <div class="drafted-stamp">
+                DRAFTED BY<br>
+                <span style="font-size: 0.95rem;" x-text="lastPickedTeamName"></span>
+            </div>
+            
+            <div class="small text-muted mt-2">Roster status has updated!</div>
+        </div>
+
+        <!-- Live Turn Notification Bar -->
         <div class="mb-4">
             <!-- Active Turn Banner -->
             <div x-show="state.captain_can_pick" class="alert alert-success border-0 shadow-lg text-center p-4 active-glow" style="border-radius: 16px;">
@@ -126,7 +189,7 @@
         </div>
 
         <div class="row g-4">
-            <!-- Left Grid: Available Players Pool (Highly optimized for mobile tap) -->
+            <!-- Left Grid: Available Players Pool -->
             <div class="col-xl-7">
                 <div class="cricket-surface p-4 p-lg-5" style="border-radius: 20px;">
                     <div class="d-flex align-items-start justify-content-between gap-3 mb-4">
@@ -138,7 +201,7 @@
                         <span class="badge bg-secondary text-white px-3 py-2" x-text="`${state.available_players.length} available`"></span>
                     </div>
 
-                    <!-- Role Filters (Tap buttons instead of hidden dropdowns) -->
+                    <!-- Role Filters -->
                     <div class="mb-4">
                         <label class="small fw-bold text-secondary d-block mb-2 text-uppercase" style="letter-spacing: .08em;"><i class="fa-solid fa-filter me-1"></i>Filter by Role / Category:</label>
                         <div class="d-flex flex-wrap gap-1">
@@ -170,7 +233,7 @@
                         </div>
                     </div>
 
-                    <!-- Available Players List (Huge buttons, color-coded context) -->
+                    <!-- Available Players List -->
                     <div class="p-2 border rounded-4 bg-light" style="max-height: 38rem; overflow-y: auto;">
                         <div class="row g-2">
                             <template x-for="player in filteredPlayers" :key="player.id">
@@ -222,7 +285,7 @@
                                 <span class="badge rounded-circle p-2" :class="pick.status === 'selected' ? 'text-bg-success' : (pick.status === 'active' ? 'text-bg-warning animate-pulse' : 'text-bg-light')" x-text="pick.pick_number"></span>
                                 <div class="flex-grow-1 min-w-0">
                                     <div class="fw-bold text-dark text-truncate" x-text="pick.team?.name"></div>
-                                    <div class="small text-secondary text-truncate" x-text="pick.player?.full_name || (pick.status === 'active' ? 'On clock' : 'Pending')"></div>
+                                    <div class="small text-secondary text-truncate" x-text="pick.player?.full_name || (pick.status === 'active' ? '🔔 ACTIVE PICK (On clock)' : 'Pending')"></div>
                                 </div>
                                 <i class="fa-solid" :class="pick.status === 'selected' ? 'fa-check-double text-success fs-5' : (pick.status === 'active' ? 'fa-hourglass-half text-warning fs-5' : 'fa-clock text-secondary')"></i>
                             </div>
@@ -234,7 +297,7 @@
 
         <div class="alert alert-danger border-0 shadow-sm mt-4" x-show="error" x-text="error"></div>
 
-        <!-- Selection Confirmation Modal (Extremely simple and visual for mobile) -->
+        <!-- Selection Confirmation Modal -->
         <div class="modal fade" id="pickConfirmationModal" tabindex="-1" aria-hidden="true" x-ref="pickModal">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
@@ -263,6 +326,7 @@
         function captainDraft(initialState, stateUrl, pickUrl) {
             return {
                 state: initialState, stateUrl, pickUrl, selectedPlayer: null, loading: false, error: '', roleFilter: 'all', remaining: initialState.timer?.remaining_seconds ?? null, timerDeadline: initialState.timer?.expires_at ? Date.parse(initialState.timer.expires_at) : null, serverOffsetMs: initialState.timer?.server_now ? Date.parse(initialState.timer.server_now) - Date.now() : 0, timerHandle: null, pollHandle: null,
+                showCelebration: false, lastPickedPlayerName: '', lastPickedTeamName: '', celebrationTimeout: null,
                 init() { this.syncTimer(); this.timerHandle = window.setInterval(() => this.syncTimer(), 250); this.pollHandle = window.setInterval(() => this.poll(), 2000); },
                 syncTimer() { if (this.timerDeadline === null || !['live', 'expired'].includes(this.state.status)) return; this.remaining = Math.max(0, Math.ceil((this.timerDeadline - (Date.now() + this.serverOffsetMs)) / 1000)); },
                 syncServerClock(payload, requestStartedAt = null, responseReceivedAt = null) { const serverNow = payload.timer?.server_now ? Date.parse(payload.timer.server_now) : null; if (Number.isFinite(serverNow)) { const midpoint = requestStartedAt !== null && responseReceivedAt !== null ? (requestStartedAt + responseReceivedAt) / 2 : Date.now(); this.serverOffsetMs = serverNow - midpoint; } },
@@ -271,9 +335,10 @@
                 get captainTeamPlayers() { const teamId = this.state.captain_team?.id; return this.state.team_squads?.find(team => team.id === teamId)?.selected_players ?? []; },
                 get formattedTimer() { if (this.remaining === null) return '--:--'; return `${Math.floor(this.remaining / 60).toString().padStart(2, '0')}:${Math.floor(this.remaining % 60).toString().padStart(2, '0')}`; },
                 confirmPick(player) { this.selectedPlayer = player; bootstrap.Modal.getOrCreateInstance(this.$refs.pickModal).show(); },
-                async submitPick() { if (!this.selectedPlayer) return; this.loading = true; this.error = ''; try { const response = await fetch(this.pickUrl, { method: 'POST', headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }, body: JSON.stringify({ tournament_player_id: this.selectedPlayer.id }) }); const payload = await response.json(); if (!response.ok) { this.error = payload.message || Object.values(payload.errors || {}).flat()[0] || 'The pick could not be completed.'; return; } this.applyState(payload); bootstrap.Modal.getOrCreateInstance(this.$refs.pickModal).hide(); } catch (error) { this.error = 'The request failed. Please try again.'; } finally { this.loading = false; } },
-                async poll() { if (document.hidden || this.loading) return; try { const requestStartedAt = Date.now(); const response = await fetch(this.stateUrl, { headers: { 'Accept': 'application/json' } }); const responseReceivedAt = Date.now(); if (!response.ok) return; const payload = await response.json(); this.syncServerClock(payload, requestStartedAt, responseReceivedAt); if (payload.revision !== this.state.revision) this.applyState(payload); } catch (error) { this.error = 'Live connection interrupted. Retrying automatically.'; } },
+                async submitPick() { if (!this.selectedPlayer) return; this.loading = true; this.error = ''; try { const response = await fetch(this.pickUrl, { method: 'POST', headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }, body: JSON.stringify({ tournament_player_id: this.selectedPlayer.id }) }); const payload = await response.json(); if (!response.ok) { this.error = payload.message || Object.values(payload.errors || {}).flat()[0] || 'The pick could not be completed.'; return; } const oldSelected = this.state.summary?.selected ?? 0; this.applyState(payload); bootstrap.Modal.getOrCreateInstance(this.$refs.pickModal).hide(); if (payload.summary?.selected > oldSelected) { this.celebrateSelection(payload); } } catch (error) { this.error = 'The request failed. Please try again.'; } finally { this.loading = false; } },
+                async poll() { if (this.loading) return; try { const requestStartedAt = Date.now(); const response = await fetch(this.stateUrl, { headers: { 'Accept': 'application/json' } }); const responseReceivedAt = Date.now(); if (!response.ok) return; const payload = await response.json(); this.syncServerClock(payload, requestStartedAt, responseReceivedAt); if (payload.revision !== this.state.revision) { const oldSelected = this.state.summary?.selected ?? 0; this.applyState(payload); if (payload.summary?.selected > oldSelected) { this.celebrateSelection(payload); } } } catch (error) { this.error = 'Live connection interrupted. Retrying automatically.'; } },
                 applyState(payload) { this.state = payload; this.timerDeadline = payload.timer?.expires_at ? Date.parse(payload.timer.expires_at) : null; this.syncServerClock(payload); this.syncTimer(); },
+                celebrateSelection(payload) { const picks = payload.picks || []; const selectedPicks = picks.filter(p => p.status === 'selected'); if (selectedPicks.length === 0) return; selectedPicks.sort((a, b) => b.pick_number - a.pick_number); const lastPick = selectedPicks[0]; if (lastPick && lastPick.player) { this.lastPickedPlayerName = lastPick.player.full_name; this.lastPickedTeamName = lastPick.team?.name || 'New Team'; this.showCelebration = true; if (typeof confetti === 'function') { confetti({ particleCount: 180, spread: 100, origin: { y: 0.6 } }); } if (this.celebrationTimeout) clearTimeout(this.celebrationTimeout); this.celebrationTimeout = setTimeout(() => { this.showCelebration = false; }, 4000); } }
             };
         }
     </script>
