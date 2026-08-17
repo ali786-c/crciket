@@ -34,7 +34,7 @@
                 </div>
                 <div class="col-md-2 d-flex gap-2">
                     <button type="submit" class="btn btn-success flex-grow-1"><i class="fa-solid fa-filter me-1"></i>Filter</button>
-                    @if($currentSearch || $currentLocation || $currentSort !== 'latest' || request()->filled('alphabet'))
+                    @if($currentSearch || $currentLocation || $currentSort !== 'name_asc' || request()->filled('alphabet'))
                         <a href="{{ route('admin.tournaments.players.index', $tournament) }}" class="btn btn-outline-secondary" title="Reset filters"><i class="fa-solid fa-arrow-rotate-left"></i></a>
                     @endif
                 </div>

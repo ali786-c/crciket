@@ -38,10 +38,10 @@ class PlayerApprovalController extends Controller
         }
 
         // Sorting
-        $sort = request('sort', 'latest');
+        $sort = request('sort', 'name_asc');
         switch ($sort) {
-            case 'name_asc':
-                $query->orderBy('player_profiles.full_name', 'asc');
+            case 'latest':
+                $query->orderBy('tournament_players.created_at', 'desc');
                 break;
             case 'name_desc':
                 $query->orderBy('player_profiles.full_name', 'desc');
@@ -52,9 +52,9 @@ class PlayerApprovalController extends Controller
             case 'location_desc':
                 $query->orderBy('player_profiles.city', 'desc');
                 break;
-            case 'latest':
+            case 'name_asc':
             default:
-                $query->orderBy('tournament_players.created_at', 'desc');
+                $query->orderBy('player_profiles.full_name', 'asc');
                 break;
         }
 
