@@ -38,7 +38,7 @@ class AdminTournamentController extends Controller
     {
         $data = $this->validated($request, false);
         if ($tournament->draft && $tournament->draft->status !== 'setup') {
-            foreach (['squad_size', 'default_pick_duration', 'cricket_rule_profile_id', 'default_overs_per_innings'] as $field) {
+            foreach (['squad_size', 'cricket_rule_profile_id', 'default_overs_per_innings'] as $field) {
                 if (array_key_exists($field, $data) && (int) $data[$field] !== (int) $tournament->{$field}) {
                     throw ValidationException::withMessages([$field => 'This field is locked after draft setup begins.']);
                 }

@@ -77,9 +77,6 @@ class TournamentController extends Controller
             if (array_key_exists('squad_size', $attributes) && (int) $attributes['squad_size'] !== (int) $tournament->squad_size) {
                 throw ValidationException::withMessages(['squad_size' => 'Squad size is locked after draft setup begins.']);
             }
-            if (array_key_exists('default_pick_duration', $attributes) && (int) $attributes['default_pick_duration'] !== (int) $tournament->default_pick_duration) {
-                throw ValidationException::withMessages(['default_pick_duration' => 'Default pick duration is locked after draft setup begins.']);
-            }
             if (array_key_exists('cricket_rule_profile_id', $attributes) && (int) $attributes['cricket_rule_profile_id'] !== (int) $tournament->cricket_rule_profile_id) {
                 throw ValidationException::withMessages(['cricket_rule_profile_id' => 'Match rules are locked after draft setup begins.']);
             }
