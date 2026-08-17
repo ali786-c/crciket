@@ -244,11 +244,19 @@
                             <p class="cricket-kicker mb-2">Player pool</p>
                             <h2 class="h3 fw-bold mb-1 text-dark">Remaining players</h2>
                         </div>
-                        <span class="badge text-bg-light" x-text="state.remaining_players?.length ?? 0"></span>
+                        <span class="badge text-bg-light" x-text="filteredRemainingPlayers.length"></span>
+                    </div>
+                    
+                    <!-- Search Input -->
+                    <div class="mb-3">
+                        <div class="input-group input-group-sm shadow-sm" style="border-radius: 6px; overflow: hidden;">
+                            <span class="input-group-text bg-white border-secondary-subtle text-secondary"><i class="fa-solid fa-magnifying-glass"></i></span>
+                            <input type="text" x-model="searchQuery" class="form-control border-secondary-subtle" placeholder="Search player by name...">
+                        </div>
                     </div>
                     
                     <div class="vstack gap-2" style="max-height:28rem;overflow-y:auto;">
-                        <template x-for="player in (state.remaining_players || [])" :key="player.id">
+                        <template x-for="player in filteredRemainingPlayers" :key="player.id">
                             <div class="cricket-surface-soft p-3 d-flex align-items-center justify-content-between gap-2">
                                 <div class="min-w-0">
                                     <div class="fw-bold text-dark text-truncate" x-text="player.full_name"></div>
@@ -310,6 +318,7 @@
                 lastPickedPlayerName: '',
                 lastPickedTeamName: '',
                 celebrationTimeout: null,
+                searchQuery: '',
                 
                 init() { 
                     this.syncTimer(); 
@@ -336,6 +345,14 @@
                 }, 
                 get hasSelectedPick() { 
                     return this.state.picks.some(pick => pick.status === 'selected'); 
+                }, 
+                get filteredRemainingPlayers() {
+                    let players = this.state.remaining_players || [];
+                    if (this.searchQuery && this.searchQuery.trim() !== '') {
+                        const q = this.searchQuery.toLowerCase().trim();
+                        players = players.filter(player => (player.full_name || '').toLowerCase().includes(q));
+                    }
+                    return players;
                 }, 
                 async poll() { 
                     if (document.hidden || this.loading) return; 

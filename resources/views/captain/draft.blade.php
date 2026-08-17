@@ -185,6 +185,14 @@
                     </div>
                 </div>
 
+                <!-- Name Search -->
+                <div class="mb-3">
+                    <div class="input-group shadow-sm" style="border-radius: 8px; overflow: hidden;">
+                        <span class="input-group-text bg-white border-secondary-subtle text-secondary"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <input type="text" x-model="searchQuery" class="form-control border-secondary-subtle" placeholder="Search player by name / Name se talash karein...">
+                    </div>
+                </div>
+
                 <!-- Available Players List -->
                 <div class="p-2 border rounded-4 bg-light" style="max-height: 38rem; overflow-y: auto;">
                     <div class="row g-2">
@@ -300,13 +308,13 @@
     <script>
         function captainDraft(initialState, stateUrl, pickUrl) {
             return {
-                state: initialState, stateUrl, pickUrl, selectedPlayer: null, loading: false, error: '', roleFilter: 'all', remaining: initialState.timer?.remaining_seconds ?? null, timerDeadline: initialState.timer?.expires_at ? Date.parse(initialState.timer.expires_at) : null, serverOffsetMs: initialState.timer?.server_now ? Date.parse(initialState.timer.server_now) - Date.now() : 0, timerHandle: null, pollHandle: null,
+                state: initialState, stateUrl, pickUrl, selectedPlayer: null, loading: false, error: '', roleFilter: 'all', searchQuery: '', remaining: initialState.timer?.remaining_seconds ?? null, timerDeadline: initialState.timer?.expires_at ? Date.parse(initialState.timer.expires_at) : null, serverOffsetMs: initialState.timer?.server_now ? Date.parse(initialState.timer.server_now) - Date.now() : 0, timerHandle: null, pollHandle: null,
                 showCelebration: false, lastPickedPlayerName: '', lastPickedTeamName: '', celebrationTimeout: null,
                 init() { this.syncTimer(); this.timerHandle = window.setInterval(() => this.syncTimer(), 250); this.pollHandle = window.setInterval(() => this.poll(), 2000); },
                 syncTimer() { if (this.timerDeadline === null || !['live', 'expired'].includes(this.state.status)) return; this.remaining = Math.max(0, Math.ceil((this.timerDeadline - (Date.now() + this.serverOffsetMs)) / 1000)); },
                 syncServerClock(payload, requestStartedAt = null, responseReceivedAt = null) { const serverNow = payload.timer?.server_now ? Date.parse(payload.timer.server_now) : null; if (Number.isFinite(serverNow)) { const midpoint = requestStartedAt !== null && responseReceivedAt !== null ? (requestStartedAt + responseReceivedAt) / 2 : Date.now(); this.serverOffsetMs = serverNow - midpoint; } },
                 get roleFilters() { return [{ value: 'all', label: 'All roles' }, { value: 'Batter', label: 'Batters' }, { value: 'Bowler', label: 'Bowlers' }, { value: 'All-rounder', label: 'All-rounders' }, { value: 'Wicketkeeper', label: 'Wicketkeepers' }, { value: 'Unassigned', label: 'Unassigned' }]; },
-                get filteredPlayers() { if (this.roleFilter === 'all') return this.state.available_players; return this.state.available_players.filter(player => (player.playing_role || 'Unassigned') === this.roleFilter); },
+                get filteredPlayers() { let players = this.state.available_players || []; if (this.roleFilter !== 'all') { players = players.filter(player => (player.playing_role || 'Unassigned') === this.roleFilter); } if (this.searchQuery && this.searchQuery.trim() !== '') { const q = this.searchQuery.toLowerCase().trim(); players = players.filter(player => (player.full_name || '').toLowerCase().includes(q)); } return players; },
                 get captainTeamPlayers() { const teamId = this.state.captain_team?.id; return this.state.team_squads?.find(team => team.id === teamId)?.selected_players ?? []; },
                 get formattedTimer() { if (this.remaining === null) return '--:--'; return `${Math.floor(this.remaining / 60).toString().padStart(2, '0')}:${Math.floor(this.remaining % 60).toString().padStart(2, '0')}`; },
                 confirmPick(player) { this.selectedPlayer = player; bootstrap.Modal.getOrCreateInstance(this.$refs.pickModal).show(); },
