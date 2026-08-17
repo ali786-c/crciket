@@ -79,20 +79,25 @@
                                     <span class="badge {{ $registration->status === 'approved' ? 'text-bg-success' : ($registration->status === 'rejected' ? 'text-bg-danger' : 'text-bg-warning') }}">{{ ucfirst($registration->status) }}</span>
                                 </div>
                                 <div class="col-6 col-lg-2">
-                                    <div class="d-flex justify-content-lg-end gap-2">
+                                    <div class="d-flex justify-content-lg-end align-items-center gap-2">
                                         <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editPlayerModal{{ $registration->id }}"><i class="fa-solid fa-pen me-1"></i>Edit</button>
                                         @if ($registration->status !== 'approved')
-                                            <form method="POST" action="{{ route('admin.tournaments.players.approve', [$tournament, $registration]) }}">
+                                            <form method="POST" action="{{ route('admin.tournaments.players.approve', [$tournament, $registration]) }}" class="d-inline">
                                                 @csrf
                                                 <button class="btn btn-sm btn-success" type="submit"><i class="fa-solid fa-check me-1"></i>Approve</button>
                                             </form>
                                         @endif
                                         @if ($registration->status !== 'rejected')
-                                            <form method="POST" action="{{ route('admin.tournaments.players.reject', [$tournament, $registration]) }}">
+                                            <form method="POST" action="{{ route('admin.tournaments.players.reject', [$tournament, $registration]) }}" class="d-inline">
                                                 @csrf
                                                 <button class="btn btn-sm btn-light text-danger" type="submit"><i class="fa-solid fa-xmark me-1"></i>Reject</button>
                                             </form>
                                         @endif
+                                        <form method="POST" action="{{ route('admin.tournaments.players.destroy', [$tournament, $registration]) }}" onsubmit="return confirm('Are you sure you want to remove this player from the tournament?')" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn btn-sm btn-outline-danger" type="submit" title="Remove Player" aria-label="Remove Player"><i class="fa-solid fa-trash"></i></button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>

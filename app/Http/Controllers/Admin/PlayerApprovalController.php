@@ -252,4 +252,17 @@ class PlayerApprovalController extends Controller
 
         return back()->with('status', 'Player profile and registration updated successfully.');
     }
+
+    public function destroy(Tournament $tournament, TournamentPlayer $tournamentPlayer): RedirectResponse
+    {
+        $this->ensureBelongsToTournament($tournament, $tournamentPlayer);
+
+        if ($tournamentPlayer->draftPicks()->whereNotNull('tournament_player_id')->exists()) {
+            return back()->withErrors(['status' => 'This player cannot be deleted because they have already been picked/selected in the draft.']);
+        }
+
+        $tournamentPlayer->delete();
+
+        return back()->with('status', 'Player removed from the tournament successfully.');
+    }
 }

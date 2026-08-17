@@ -207,6 +207,9 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::put('tournaments/{tournament}/players/{tournamentPlayer}', [PlayerApprovalController::class, 'update'])
             ->middleware('permission:manage players')
             ->name('tournaments.players.update');
+        Route::delete('tournaments/{tournament}/players/{tournamentPlayer}', [PlayerApprovalController::class, 'destroy'])
+            ->middleware('permission:manage players')
+            ->name('tournaments.players.destroy');
         Route::get('tournaments/{tournament}/audit-logs', [AuditLogController::class, 'index'])
             ->middleware('permission:control draft')
             ->name('tournaments.audit-logs.index');
