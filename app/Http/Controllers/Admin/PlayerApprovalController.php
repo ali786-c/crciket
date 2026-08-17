@@ -29,6 +29,14 @@ class PlayerApprovalController extends Controller
             $query->where('player_profiles.city', $location);
         }
 
+        // Alphabet filter
+        if (request()->filled('alphabet')) {
+            $alphabet = strtoupper(request('alphabet'));
+            if (preg_match('/^[A-Z]$/', $alphabet)) {
+                $query->where('player_profiles.full_name', 'like', $alphabet . '%');
+            }
+        }
+
         // Sorting
         $sort = request('sort', 'latest');
         switch ($sort) {
@@ -72,6 +80,7 @@ class PlayerApprovalController extends Controller
             'currentSearch' => request('search'),
             'currentLocation' => request('location'),
             'currentSort' => $sort,
+            'currentAlphabet' => request('alphabet'),
         ]);
     }
 

@@ -34,16 +34,25 @@
                 </div>
                 <div class="col-md-2 d-flex gap-2">
                     <button type="submit" class="btn btn-success flex-grow-1"><i class="fa-solid fa-filter me-1"></i>Filter</button>
-                    @if($currentSearch || $currentLocation || $currentSort !== 'latest')
+                    @if($currentSearch || $currentLocation || $currentSort !== 'latest' || request()->filled('alphabet'))
                         <a href="{{ route('admin.tournaments.players.index', $tournament) }}" class="btn btn-outline-secondary" title="Reset filters"><i class="fa-solid fa-arrow-rotate-left"></i></a>
                     @endif
                 </div>
             </form>
 
+            <!-- Alphabetical Filter Bar -->
+            <div class="d-flex flex-wrap gap-1 justify-content-center bg-light p-3 rounded-4 mb-4 shadow-sm border text-dark">
+                <span class="small fw-bold text-secondary me-2 align-self-center"><i class="fa-solid fa-arrow-down-a-z me-1"></i>Alphabet Filter:</span>
+                <a href="{{ request()->fullUrlWithQuery(['alphabet' => null]) }}" class="btn btn-sm rounded-pill {{ !request()->filled('alphabet') ? 'btn-success text-white' : 'btn-outline-secondary' }}" style="padding: 2px 10px; font-size: 0.75rem;">All</a>
+                @foreach(range('A', 'Z') as $letter)
+                    <a href="{{ request()->fullUrlWithQuery(['alphabet' => $letter]) }}" class="btn btn-sm rounded-pill {{ request('alphabet') === $letter ? 'btn-success text-white' : 'btn-outline-secondary' }}" style="padding: 2px 10px; font-size: 0.75rem;">{{ $letter }}</a>
+                @endforeach
+            </div>
+
             @if ($registrations->isEmpty())
                 <div class="p-5 text-center">
                     <span class="cricket-brand-mark mb-4"><i class="fa-solid fa-user-check"></i></span>
-                    @if($currentSearch || $currentLocation)
+                    @if($currentSearch || $currentLocation || request()->filled('alphabet'))
                         <h3 class="h4 fw-bold text-dark">No players match the criteria</h3>
                         <p class="text-secondary mb-0">Try adjusting your filters or search query.</p>
                     @else
