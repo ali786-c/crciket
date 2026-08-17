@@ -12,38 +12,40 @@
             animation: pulse-glow 1.5s infinite ease-in-out;
         }
         
-        /* Stamp celebration overlay */
+        /* Premium Stamp celebration overlay */
         .celebration-overlay {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 9999;
-            width: 320px;
+            width: 380px;
             max-width: 90vw;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-            border-radius: 20px;
-            border: 4px solid #198754 !important;
-            background: #ffffff;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            border-radius: 24px;
+            border: none;
+            background: linear-gradient(135deg, #ffffff 0%, #f9fbf9 100%);
             text-align: center;
-            padding: 24px;
+            padding: 32px 24px;
         }
         
         .drafted-stamp {
             display: inline-block;
-            border: 6px double #dc3545 !important;
-            color: #dc3545;
-            font-weight: 900;
-            padding: 8px 16px;
-            border-radius: 8px;
+            border: 4px solid #d9383a !important;
+            color: #d9383a;
+            font-weight: 800;
+            padding: 10px 20px;
+            border-radius: 12px;
             text-transform: uppercase;
             font-family: 'Courier New', Courier, monospace;
-            transform: rotate(-10deg);
-            margin: 16px 0;
-            font-size: 1.15rem;
-            letter-spacing: 1px;
+            transform: rotate(-8deg);
+            margin: 20px 0;
+            font-size: 1.3rem;
+            letter-spacing: 2px;
             line-height: 1.2;
-            box-shadow: 0 0 5px rgba(220, 53, 69, 0.1);
+            box-shadow: 0 0 10px rgba(217, 56, 58, 0.15);
+            background-color: rgba(217, 56, 58, 0.05);
+            text-shadow: 0 0 1px rgba(217, 56, 58, 0.2);
         }
     </style>
 
@@ -89,7 +91,7 @@
                 <span style="font-size: 0.95rem;" x-text="lastPickedTeamName"></span>
             </div>
             
-            <div class="small text-muted mt-2">Roster status has updated!</div>
+            <div class="small text-muted mt-2">Draft board updated.</div>
         </div>
 
         <!-- Live Turn Notification Bar -->
@@ -107,192 +109,165 @@
             </div>
         </div>
 
-        <div class="row g-4 mb-4">
-            <!-- Left Side: Live clock and status -->
-            <div class="col-xl-8">
-                <div class="cricket-pitch-panel p-4 p-lg-5 h-100" style="border-radius: 20px;">
-                    <div class="d-flex align-items-start justify-content-between gap-3 mb-5">
-                        <div>
-                            <p class="cricket-kicker mb-2">On the clock / Draft state</p>
-                            <div class="small text-white-50 mb-2" x-text="state.current_round ? `Round ${state.current_round} · Pick ${state.current_pick_number ?? '—'}` : 'Waiting for next turn'"></div>
-                            <h2 class="display-5 fw-bold mb-1" x-text="state.current_team?.name ?? 'Waiting for Admin'"></h2>
-                            <div class="text-white-50" x-text="state.status === 'expired' ? 'Timer expired — waiting for admin action' : (state.captain_can_pick ? 'Your team can pick now.' : 'Waiting for your team turn.')"></div>
-                        </div>
-                        <span class="badge fs-6 px-3 py-2" style="background: var(--cricket-lime); color: var(--cricket-pitch-deep);" x-text="state.status"></span>
+        <!-- Stacked Layout Sections: 1. Timer -> 2. Player Pool -> 3. Pick History -> 4. Your Team -->
+        <div class="vstack gap-4">
+            
+            <!-- 1. Timer Box -->
+            <div class="cricket-pitch-panel p-4 p-lg-5" style="border-radius: 20px;">
+                <div class="d-flex align-items-start justify-content-between gap-3 mb-5">
+                    <div>
+                        <p class="cricket-kicker mb-2">On the clock / Draft state</p>
+                        <div class="small text-white-50 mb-2" x-text="state.current_round ? `Round ${state.current_round} · Pick ${state.current_pick_number ?? '—'}` : 'Waiting for next turn'"></div>
+                        <h2 class="display-5 fw-bold mb-1" x-text="state.current_team?.name ?? 'Waiting for Admin'"></h2>
+                        <div class="text-white-50" x-text="state.status === 'expired' ? 'Timer expired — waiting for admin action' : (state.captain_can_pick ? 'Your team can pick now.' : 'Waiting for your team turn.')"></div>
                     </div>
+                    <span class="badge fs-6 px-3 py-2" style="background: var(--cricket-lime); color: var(--cricket-pitch-deep);" x-text="state.status"></span>
+                </div>
 
-                    <div class="row align-items-end g-4">
-                        <div class="col-md-7 text-center text-md-start">
-                            <div class="small text-white-50 mb-1">Time Remaining / Baki Waqt</div>
-                            <div class="display-1 fw-bold" style="color: var(--cricket-lime); text-shadow: 0 0 15px rgba(163, 230, 53, 0.5);" x-text="formattedTimer"></div>
+                <div class="row align-items-end g-4">
+                    <div class="col-md-7 text-center text-md-start">
+                        <div class="small text-white-50 mb-1">Time Remaining / Baki Waqt</div>
+                        <div class="display-1 fw-bold" style="color: var(--cricket-lime); text-shadow: 0 0 15px rgba(163, 230, 53, 0.5);" x-text="formattedTimer"></div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="small text-white-50 mb-2">Draft Progress / Board bar</div>
+                        <div class="d-flex justify-content-between small mb-2">
+                            <span class="text-white" x-text="`${state.summary?.selected ?? 0} Selected`"></span>
+                            <span class="text-white" x-text="`${state.summary?.total ?? 0} Total`"></span>
                         </div>
-                        <div class="col-md-5">
-                            <div class="small text-white-50 mb-2">Draft Progress / Board bar</div>
-                            <div class="d-flex justify-content-between small mb-2">
-                                <span x-text="`${state.summary?.selected ?? 0} Selected`"></span>
-                                <span x-text="`${state.summary?.total ?? 0} Total`"></span>
-                            </div>
-                            <div class="progress shadow-sm" style="height: .75rem; background: rgba(255,255,255,.15); border-radius: 10px;">
-                                <div class="progress-bar progress-bar-striped progress-bar-animated" style="background: var(--cricket-lime);" :style="`width: ${state.summary?.total ? ((state.summary.selected / state.summary.total) * 100) : 0}%`"></div>
-                            </div>
+                        <div class="progress shadow-sm" style="height: .75rem; background: rgba(255,255,255,.15); border-radius: 10px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" style="background: var(--cricket-lime);" :style="`width: ${state.summary?.total ? ((state.summary.selected / state.summary.total) * 100) : 0}%`"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Side: Squad Count Info -->
-            <div class="col-xl-4">
-                <div class="cricket-surface p-4 h-100" style="border-radius: 20px;">
-                    <p class="cricket-kicker mb-2">Roster Summary</p>
-                    <h2 class="h4 fw-bold mb-4 text-dark">Roster board</h2>
-                    
-                    <div class="vstack gap-2">
-                        <div class="p-3 bg-light border rounded-3 d-flex justify-content-between">
-                            <span class="text-secondary fw-bold">Selected Players:</span>
-                            <strong class="text-success fs-5" x-text="state.summary?.selected ?? 0"></strong>
-                        </div>
-                        <div class="p-3 bg-light border rounded-3 d-flex justify-content-between">
-                            <span class="text-secondary fw-bold">Remaining Picks:</span>
-                            <strong class="text-dark fs-5" x-text="Math.max(0, (state.summary?.total ?? 0) - (state.summary?.selected ?? 0))"></strong>
-                        </div>
-                        <div class="p-3 bg-light border rounded-3 d-flex justify-content-between">
-                            <span class="text-secondary fw-bold">Available in Pool:</span>
-                            <strong class="text-dark fs-5" x-text="state.available_players.length"></strong>
-                        </div>
+            <!-- 2. Player Pool Box -->
+            <div class="cricket-surface p-4 p-lg-5" style="border-radius: 20px;">
+                <div class="d-flex align-items-start justify-content-between gap-3 mb-4">
+                    <div>
+                        <p class="cricket-kicker mb-2">Player Pool</p>
+                        <h2 class="h3 fw-bold mb-1 text-dark">Select Players</h2>
+                        <p class="text-secondary mb-0">Choose players below when it is your turn.</p>
                     </div>
+                    <span class="badge bg-secondary text-white px-3 py-2" x-text="`${state.available_players.length} available`"></span>
+                </div>
 
-                    <div class="border-top mt-4 pt-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div>
-                                <p class="cricket-kicker mb-1">Your Team / Aap Ki Team</p>
-                                <h3 class="h5 fw-bold mb-0 text-dark" x-text="state.captain_team?.name ?? 'Assigned Team'"></h3>
-                            </div>
-                            <span class="badge bg-success px-2 py-1.5 fs-7" x-text="`${captainTeamPlayers.length} picked`"></span>
-                        </div>
-                        
-                        <div class="vstack gap-2" x-show="captainTeamPlayers.length" style="max-height: 18rem; overflow-y: auto;">
-                            <template x-for="player in captainTeamPlayers" :key="player.pick_number">
-                                <div class="p-2 border bg-light rounded-3 d-flex align-items-center gap-3">
-                                    <span class="badge bg-success rounded-circle p-2" x-text="player.pick_number"></span>
-                                    <div class="flex-grow-1 min-w-0">
-                                        <div class="fw-bold text-dark text-truncate" x-text="player.full_name"></div>
-                                        <div class="small text-secondary" x-text="player.playing_role || 'Unassigned role'"></div>
-                                    </div>
-                                    <div class="small text-secondary text-end" x-text="player.selected_at ? new Date(player.selected_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) : ''"></div>
-                                </div>
-                            </template>
-                        </div>
-                        <div class="small text-secondary text-center py-3" x-show="!captainTeamPlayers.length">No players picked yet.</div>
+                <!-- Role Filters -->
+                <div class="mb-4">
+                    <label class="small fw-bold text-secondary d-block mb-2 text-uppercase" style="letter-spacing: .08em;"><i class="fa-solid fa-filter me-1"></i>Filter by Role / Category:</label>
+                    <div class="d-flex flex-wrap gap-1">
+                        <button type="button" class="btn btn-sm rounded-pill fw-bold border" 
+                                :class="roleFilter === 'all' ? 'btn-success text-white border-success' : 'btn-outline-secondary bg-white'" 
+                                @click="roleFilter = 'all'" style="font-size: 0.8rem; padding: 6px 12px;">
+                            🌍 All / Sab (All)
+                        </button>
+                        <button type="button" class="btn btn-sm rounded-pill fw-bold border" 
+                                :class="roleFilter === 'Batter' ? 'btn-success text-white border-success' : 'btn-outline-secondary bg-white'" 
+                                @click="roleFilter = 'Batter'" style="font-size: 0.8rem; padding: 6px 12px;">
+                            🏏 Batter (Batters)
+                        </button>
+                        <button type="button" class="btn btn-sm rounded-pill fw-bold border" 
+                                :class="roleFilter === 'Bowler' ? 'btn-success text-white border-success' : 'btn-outline-secondary bg-white'" 
+                                @click="roleFilter = 'Bowler'" style="font-size: 0.8rem; padding: 6px 12px;">
+                            🥎 Bowler (Bowlers)
+                        </button>
+                        <button type="button" class="btn btn-sm rounded-pill fw-bold border" 
+                                :class="roleFilter === 'All-rounder' ? 'btn-success text-white border-success' : 'btn-outline-secondary bg-white'" 
+                                @click="roleFilter = 'All-rounder'" style="font-size: 0.8rem; padding: 6px 12px;">
+                            ⚡ All-Rounder
+                        </button>
+                        <button type="button" class="btn btn-sm rounded-pill fw-bold border" 
+                                :class="roleFilter === 'Wicketkeeper' ? 'btn-success text-white border-success' : 'btn-outline-secondary bg-white'" 
+                                @click="roleFilter = 'Wicketkeeper'" style="font-size: 0.8rem; padding: 6px 12px;">
+                            🧤 Keeper
+                        </button>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="row g-4">
-            <!-- Left Grid: Available Players Pool -->
-            <div class="col-xl-7">
-                <div class="cricket-surface p-4 p-lg-5" style="border-radius: 20px;">
-                    <div class="d-flex align-items-start justify-content-between gap-3 mb-4">
-                        <div>
-                            <p class="cricket-kicker mb-2">Player Pool</p>
-                            <h2 class="h3 fw-bold mb-1 text-dark">Select Players</h2>
-                            <p class="text-secondary mb-0">Choose players below when it is your turn.</p>
-                        </div>
-                        <span class="badge bg-secondary text-white px-3 py-2" x-text="`${state.available_players.length} available`"></span>
-                    </div>
-
-                    <!-- Role Filters -->
-                    <div class="mb-4">
-                        <label class="small fw-bold text-secondary d-block mb-2 text-uppercase" style="letter-spacing: .08em;"><i class="fa-solid fa-filter me-1"></i>Filter by Role / Category:</label>
-                        <div class="d-flex flex-wrap gap-1">
-                            <button type="button" class="btn btn-sm rounded-pill fw-bold border" 
-                                    :class="roleFilter === 'all' ? 'btn-success text-white border-success' : 'btn-outline-secondary bg-white'" 
-                                    @click="roleFilter = 'all'" style="font-size: 0.8rem; padding: 6px 12px;">
-                                🌍 All / Sab (All)
-                            </button>
-                            <button type="button" class="btn btn-sm rounded-pill fw-bold border" 
-                                    :class="roleFilter === 'Batter' ? 'btn-success text-white border-success' : 'btn-outline-secondary bg-white'" 
-                                    @click="roleFilter = 'Batter'" style="font-size: 0.8rem; padding: 6px 12px;">
-                                🏏 Batter (Batters)
-                            </button>
-                            <button type="button" class="btn btn-sm rounded-pill fw-bold border" 
-                                    :class="roleFilter === 'Bowler' ? 'btn-success text-white border-success' : 'btn-outline-secondary bg-white'" 
-                                    @click="roleFilter = 'Bowler'" style="font-size: 0.8rem; padding: 6px 12px;">
-                                🥎 Bowler (Bowlers)
-                            </button>
-                            <button type="button" class="btn btn-sm rounded-pill fw-bold border" 
-                                    :class="roleFilter === 'All-rounder' ? 'btn-success text-white border-success' : 'btn-outline-secondary bg-white'" 
-                                    @click="roleFilter = 'All-rounder'" style="font-size: 0.8rem; padding: 6px 12px;">
-                                ⚡ All-Rounder
-                            </button>
-                            <button type="button" class="btn btn-sm rounded-pill fw-bold border" 
-                                    :class="roleFilter === 'Wicketkeeper' ? 'btn-success text-white border-success' : 'btn-outline-secondary bg-white'" 
-                                    @click="roleFilter = 'Wicketkeeper'" style="font-size: 0.8rem; padding: 6px 12px;">
-                                🧤 Keeper
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Available Players List -->
-                    <div class="p-2 border rounded-4 bg-light" style="max-height: 38rem; overflow-y: auto;">
-                        <div class="row g-2">
-                            <template x-for="player in filteredPlayers" :key="player.id">
-                                <div class="col-md-6">
-                                    <button type="button" class="btn w-100 text-start p-3 h-100 border shadow-sm rounded-3" 
-                                            :class="state.captain_can_pick ? 'btn-success text-white active-glow border-success' : 'btn-white text-dark bg-white border-secondary-subtle'"
-                                            @click="confirmPick(player)" 
-                                            :disabled="!state.captain_can_pick || loading"
-                                            style="transition: all 0.2s;">
-                                        <span class="d-flex align-items-center gap-3">
-                                            <!-- Visual Role Icon Box -->
-                                            <span class="cricket-brand-mark flex-shrink-0 d-flex align-items-center justify-content-center bg-light text-dark shadow-sm" style="width: 2.75rem; height: 2.75rem; border-radius: 12px; font-size: 1.35rem;">
-                                                <span x-text="player.playing_role === 'Batter' ? '🏏' : (player.playing_role === 'Bowler' ? '🥎' : (player.playing_role === 'All-rounder' ? '⚡' : (player.playing_role === 'Wicketkeeper' ? '🧤' : '👤')))"></span>
-                                            </span>
-                                            <!-- Player Details -->
-                                            <span class="flex-grow-1 min-w-0">
-                                                <span class="d-block fw-bold text-truncate" :class="state.captain_can_pick ? 'text-white' : 'text-dark'" style="font-size: 1.05rem;" x-text="player.full_name"></span>
-                                                <span class="d-block small text-truncate" :class="state.captain_can_pick ? 'text-white-50' : 'text-secondary'" x-text="`${player.playing_role || 'Unassigned'}${player.city ? ' · ' + player.city : ''}`"></span>
-                                            </span>
-                                            <i class="fa-solid fa-square-plus fs-4" :class="state.captain_can_pick ? 'text-white' : 'text-success'"></i>
+                <!-- Available Players List -->
+                <div class="p-2 border rounded-4 bg-light" style="max-height: 38rem; overflow-y: auto;">
+                    <div class="row g-2">
+                        <template x-for="player in filteredPlayers" :key="player.id">
+                            <div class="col-md-6 col-lg-4">
+                                <button type="button" class="btn w-100 text-start p-3 h-100 border shadow-sm rounded-3" 
+                                        :class="state.captain_can_pick ? 'btn-success text-white active-glow border-success' : 'btn-white text-dark bg-white border-secondary-subtle'"
+                                        @click="confirmPick(player)" 
+                                        :disabled="!state.captain_can_pick || loading"
+                                        style="transition: all 0.2s;">
+                                    <span class="d-flex align-items-center gap-3">
+                                        <!-- Visual Role Icon Box -->
+                                        <span class="cricket-brand-mark flex-shrink-0 d-flex align-items-center justify-content-center bg-light text-dark shadow-sm" style="width: 2.75rem; height: 2.75rem; border-radius: 12px; font-size: 1.35rem;">
+                                            <span x-text="player.playing_role === 'Batter' ? '🏏' : (player.playing_role === 'Bowler' ? '🥎' : (player.playing_role === 'All-rounder' ? '⚡' : (player.playing_role === 'Wicketkeeper' ? '🧤' : '👤')))"></span>
                                         </span>
-                                    </button>
-                                </div>
-                            </template>
-                        </div>
-                        
-                        <div class="text-center text-secondary py-5" x-show="!filteredPlayers.length">
-                            <i class="fa-solid fa-filter-circle-xmark fs-3 mb-2"></i>
-                            <div>Is category me koi player nahi hai.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Grid: Live History sequence -->
-            <div class="col-xl-5">
-                <div class="cricket-surface p-4 p-lg-5 h-100" style="border-radius: 20px;">
-                    <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
-                        <div>
-                            <p class="cricket-kicker mb-2">Live sequence / History</p>
-                            <h2 class="h3 fw-bold mb-1 text-dark">Pick History</h2>
-                        </div>
-                        <span class="small text-secondary">Rev <span x-text="state.revision"></span></span>
-                    </div>
-
-                    <div class="vstack gap-2" style="max-height: 42rem; overflow-y: auto;">
-                        <template x-for="pick in state.picks" :key="pick.pick_number">
-                            <div class="p-3 border rounded-3 d-flex align-items-center gap-3" :style="pick.status === 'active' ? 'background: #fff3cd; border-color: #ffecb5 !important;' : 'background: #f8f9fa;'">
-                                <span class="badge rounded-circle p-2" :class="pick.status === 'selected' ? 'text-bg-success' : (pick.status === 'active' ? 'text-bg-warning animate-pulse' : 'text-bg-light')" x-text="pick.pick_number"></span>
-                                <div class="flex-grow-1 min-w-0">
-                                    <div class="fw-bold text-dark text-truncate" x-text="pick.team?.name"></div>
-                                    <div class="small text-secondary text-truncate" x-text="pick.player?.full_name || (pick.status === 'active' ? '🔔 ACTIVE PICK (On clock)' : 'Pending')"></div>
-                                </div>
-                                <i class="fa-solid" :class="pick.status === 'selected' ? 'fa-check-double text-success fs-5' : (pick.status === 'active' ? 'fa-hourglass-half text-warning fs-5' : 'fa-clock text-secondary')"></i>
+                                        <!-- Player Details -->
+                                        <span class="flex-grow-1 min-w-0">
+                                            <span class="d-block fw-bold text-truncate" :class="state.captain_can_pick ? 'text-white' : 'text-dark'" style="font-size: 1.05rem;" x-text="player.full_name"></span>
+                                            <span class="d-block small text-truncate" :class="state.captain_can_pick ? 'text-white-50' : 'text-secondary'" x-text="`${player.playing_role || 'Unassigned'}${player.city ? ' · ' + player.city : ''}`"></span>
+                                        </span>
+                                        <i class="fa-solid fa-square-plus fs-4" :class="state.captain_can_pick ? 'text-white' : 'text-success'"></i>
+                                    </span>
+                                </button>
                             </div>
                         </template>
                     </div>
+                    
+                    <div class="text-center text-secondary py-5" x-show="!filteredPlayers.length">
+                        <i class="fa-solid fa-filter-circle-xmark fs-3 mb-2"></i>
+                        <div>Is category me koi player nahi hai.</div>
+                    </div>
                 </div>
             </div>
+
+            <!-- 3. Pick History Box -->
+            <div class="cricket-surface p-4 p-lg-5" style="border-radius: 20px;">
+                <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
+                    <div>
+                        <p class="cricket-kicker mb-2">Live sequence / History</p>
+                        <h2 class="h3 fw-bold mb-1 text-dark">Pick History / Draft History</h2>
+                    </div>
+                    <span class="small text-secondary">Rev <span x-text="state.revision"></span></span>
+                </div>
+
+                <div class="vstack gap-2" style="max-height: 28rem; overflow-y: auto;">
+                    <template x-for="pick in state.picks" :key="pick.pick_number">
+                        <div class="p-3 border rounded-3 d-flex align-items-center gap-3" :style="pick.status === 'active' ? 'background: #fff3cd; border-color: #ffecb5 !important;' : 'background: #f8f9fa;'">
+                            <span class="badge rounded-circle p-2" :class="pick.status === 'selected' ? 'text-bg-success' : (pick.status === 'active' ? 'text-bg-warning animate-pulse' : 'text-bg-light')" x-text="pick.pick_number"></span>
+                            <div class="flex-grow-1 min-w-0">
+                                <div class="fw-bold text-dark text-truncate" x-text="pick.team?.name"></div>
+                                <div class="small text-secondary text-truncate" x-text="pick.player?.full_name || (pick.status === 'active' ? '🔔 ACTIVE PICK (On clock)' : 'Pending')"></div>
+                            </div>
+                            <i class="fa-solid" :class="pick.status === 'selected' ? 'fa-check-double text-success fs-5' : (pick.status === 'active' ? 'fa-hourglass-half text-warning fs-5' : 'fa-clock text-secondary')"></i>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- 4. Your Team Box -->
+            <div class="cricket-surface p-4 p-lg-5" style="border-radius: 20px;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <p class="cricket-kicker mb-2">Your Team / Aap Ki Team</p>
+                        <h3 class="h3 fw-bold mb-0 text-dark" x-text="state.captain_team?.name ?? 'Assigned Team'"></h3>
+                    </div>
+                    <span class="badge bg-success px-3 py-2 fs-6" x-text="`${captainTeamPlayers.length} picked`"></span>
+                </div>
+
+                <div class="vstack gap-2" x-show="captainTeamPlayers.length" style="max-height: 24rem; overflow-y: auto;">
+                    <template x-for="player in captainTeamPlayers" :key="player.pick_number">
+                        <div class="p-3 border bg-light rounded-3 d-flex align-items-center gap-3">
+                            <span class="badge bg-success rounded-circle p-2" x-text="player.pick_number"></span>
+                            <div class="flex-grow-1 min-w-0">
+                                <div class="fw-bold text-dark text-truncate" x-text="player.full_name"></div>
+                                <div class="small text-secondary" x-text="player.playing_role || 'Unassigned role'"></div>
+                            </div>
+                            <div class="small text-secondary text-end" x-text="player.selected_at ? new Date(player.selected_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) : ''"></div>
+                        </div>
+                    </template>
+                </div>
+                <div class="small text-secondary text-center py-4" x-show="!captainTeamPlayers.length">No players picked yet.</div>
+            </div>
+
         </div>
 
         <div class="alert alert-danger border-0 shadow-sm mt-4" x-show="error" x-text="error"></div>

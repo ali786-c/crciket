@@ -3,38 +3,40 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <style>
-        /* Stamp celebration overlay */
+        /* Premium Stamp celebration overlay */
         .celebration-overlay {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 9999;
-            width: 320px;
+            width: 380px;
             max-width: 90vw;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-            border-radius: 20px;
-            border: 4px solid #198754 !important;
-            background: #ffffff;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            border-radius: 24px;
+            border: none;
+            background: linear-gradient(135deg, #ffffff 0%, #f9fbf9 100%);
             text-align: center;
-            padding: 24px;
+            padding: 32px 24px;
         }
         
         .drafted-stamp {
             display: inline-block;
-            border: 6px double #dc3545 !important;
-            color: #dc3545;
-            font-weight: 900;
-            padding: 8px 16px;
-            border-radius: 8px;
+            border: 4px solid #d9383a !important;
+            color: #d9383a;
+            font-weight: 800;
+            padding: 10px 20px;
+            border-radius: 12px;
             text-transform: uppercase;
             font-family: 'Courier New', Courier, monospace;
-            transform: rotate(-10deg);
-            margin: 16px 0;
-            font-size: 1.15rem;
-            letter-spacing: 1px;
+            transform: rotate(-8deg);
+            margin: 20px 0;
+            font-size: 1.3rem;
+            letter-spacing: 2px;
             line-height: 1.2;
-            box-shadow: 0 0 5px rgba(220, 53, 69, 0.1);
+            box-shadow: 0 0 10px rgba(217, 56, 58, 0.15);
+            background-color: rgba(217, 56, 58, 0.05);
+            text-shadow: 0 0 1px rgba(217, 56, 58, 0.2);
         }
     </style>
 
@@ -45,7 +47,7 @@
                     <span class="cricket-live-dot"></span>
                     <span class="small text-uppercase fw-bold text-danger" style="letter-spacing:.12em;">Admin control room</span>
                 </div>
-                <h1 class="display-6 fw-bold mb-2 text-white">{{ $tournament->name }}</h1>
+                <h1 class="display-6 fw-bold mb-2 text-dark">{{ $tournament->name }}</h1>
                 <p class="text-secondary mb-0">Server-authoritative draft operations.</p>
             </div>
             <div class="d-flex gap-2">
@@ -88,7 +90,7 @@
             <div class="col-6 col-md">
                 <div class="cricket-surface p-3">
                     <div class="small text-secondary">Total picks</div>
-                    <div class="cricket-stat-value mt-2 text-white" x-text="state.summary?.total ?? 0"></div>
+                    <div class="cricket-stat-value mt-2 text-dark" x-text="state.summary?.total ?? 0"></div>
                 </div>
             </div>
             <div class="col-6 col-md">
@@ -100,7 +102,7 @@
             <div class="col-6 col-md">
                 <div class="cricket-surface p-3">
                     <div class="small text-secondary">Pending</div>
-                    <div class="cricket-stat-value mt-2 text-white" x-text="state.summary?.pending ?? 0"></div>
+                    <div class="cricket-stat-value mt-2 text-dark" x-text="state.summary?.pending ?? 0"></div>
                 </div>
             </div>
             <div class="col-6 col-md">
@@ -112,7 +114,7 @@
             <div class="col-6 col-md">
                 <div class="cricket-surface p-3">
                     <div class="small text-secondary">Skipped</div>
-                    <div class="cricket-stat-value mt-2 text-white" x-text="state.summary?.skipped ?? 0"></div>
+                    <div class="cricket-stat-value mt-2 text-dark" x-text="state.summary?.skipped ?? 0"></div>
                 </div>
             </div>
         </div>
@@ -162,7 +164,7 @@
                     <div class="d-flex align-items-start justify-content-between gap-3 mb-4">
                         <div>
                             <p class="cricket-kicker mb-2">Pick sequence</p>
-                            <h2 class="h3 fw-bold mb-1 text-white">The board</h2>
+                            <h2 class="h3 fw-bold mb-1 text-dark">The board</h2>
                         </div>
                         <span class="badge text-bg-light" x-text="`${completedPicks}/${state.picks.length}`"></span>
                     </div>
@@ -172,7 +174,7 @@
                             <div class="cricket-surface-soft p-3 d-flex align-items-center gap-3">
                                 <span class="badge rounded-circle p-2" :class="pick.status === 'selected' ? 'text-bg-success' : (pick.status === 'active' ? 'text-bg-warning' : 'text-bg-light')" x-text="pick.pick_number"></span>
                                 <div class="flex-grow-1 min-w-0">
-                                    <div class="fw-bold text-white text-truncate" x-text="pick.team?.name ?? 'Unassigned team'"></div>
+                                    <div class="fw-bold text-dark text-truncate" x-text="pick.team?.name ?? 'Unassigned team'"></div>
                                     <div class="small text-secondary text-truncate" x-text="pick.player?.full_name ?? pick.status"></div>
                                 </div>
                             </div>
@@ -188,7 +190,7 @@
                     <div class="d-flex align-items-end justify-content-between gap-3 mb-4">
                         <div>
                             <p class="cricket-kicker mb-2">Team squads</p>
-                            <h2 class="h3 fw-bold mb-1 text-white">Selected players by team</h2>
+                            <h2 class="h3 fw-bold mb-1 text-dark">Selected players by team</h2>
                             <p class="text-secondary mb-0">Every confirmed selection grouped against its assigned team.</p>
                         </div>
                         <span class="badge text-bg-light" x-text="`${state.summary?.selected ?? 0} selected`"></span>
@@ -200,7 +202,7 @@
                                 <div class="cricket-surface-soft p-3 h-100">
                                     <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
                                         <div>
-                                            <h3 class="h5 fw-bold mb-1 text-white" x-text="team.name"></h3>
+                                            <h3 class="h5 fw-bold mb-1 text-dark" x-text="team.name"></h3>
                                             <div class="small text-secondary" x-text="`${team.selected_count} player${team.selected_count === 1 ? '' : 's'} selected`"></div>
                                         </div>
                                         <span class="badge text-bg-success" x-text="team.selected_count"></span>
@@ -240,7 +242,7 @@
                     <div class="d-flex align-items-end justify-content-between gap-2 mb-4">
                         <div>
                             <p class="cricket-kicker mb-2">Player pool</p>
-                            <h2 class="h3 fw-bold mb-1 text-white">Remaining players</h2>
+                            <h2 class="h3 fw-bold mb-1 text-dark">Remaining players</h2>
                         </div>
                         <span class="badge text-bg-light" x-text="state.remaining_players?.length ?? 0"></span>
                     </div>
@@ -249,7 +251,7 @@
                         <template x-for="player in (state.remaining_players || [])" :key="player.id">
                             <div class="cricket-surface-soft p-3 d-flex align-items-center justify-content-between gap-2">
                                 <div class="min-w-0">
-                                    <div class="fw-bold text-white text-truncate" x-text="player.full_name"></div>
+                                    <div class="fw-bold text-dark text-truncate" x-text="player.full_name"></div>
                                     <div class="small text-secondary text-truncate" x-text="`${player.playing_role || 'Unassigned'}${player.city ? ' · ' + player.city : ''}`"></div>
                                 </div>
                                 <button type="button" class="btn btn-sm btn-outline-success" @click="selectPlayer(player)" :disabled="loading || !selectionPickNumber" x-show="selectionPickNumber"><i class="fa-solid fa-user-plus me-1"></i>Select</button>
@@ -266,7 +268,7 @@
             <div class="d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-3 mb-3">
                 <div>
                     <p class="cricket-kicker mb-2">Manual rounds</p>
-                    <h2 class="h4 fw-bold mb-1 text-white">Round control</h2>
+                    <h2 class="h4 fw-bold mb-1 text-dark">Round control</h2>
                     <p class="text-secondary mb-0">Every pending pick waits here until the administrator starts it.</p>
                 </div>
                 <span class="badge text-bg-light" x-text="state.next_round ? `Next: Round ${state.next_round.round_number}` : 'No pending round'"></span>
@@ -277,7 +279,7 @@
                     <div class="col-md-4">
                         <div class="cricket-surface-soft p-3 d-flex align-items-center justify-content-between gap-2">
                             <div>
-                                <div class="fw-bold text-white" x-text="round.name || `Round ${round.round_number}`"></div>
+                                <div class="fw-bold text-dark" x-text="round.name || `Round ${round.round_number}`"></div>
                                 <div class="small text-secondary" x-text="`${round.selected}/${round.total} selected · ${round.status}`"></div>
                             </div>
                             <span class="badge" :class="round.status === 'completed' ? 'text-bg-success' : (round.status === 'active' ? 'text-bg-warning' : 'text-bg-light')" x-text="round.status"></span>
