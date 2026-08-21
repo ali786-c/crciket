@@ -1,0 +1,75 @@
+package com.devwithguru.cricket.ui.viewmodels
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.devwithguru.cricket.data.repository.PlayerRepository
+import com.devwithguru.cricket.ui.screens.PlayerSelectable
+import com.devwithguru.cricket.ui.screens.RegisteredPlayer
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@HiltViewModel
+class LineupViewModel @Inject constructor(
+    private val playerRepository: PlayerRepository
+) : ViewModel() {
+
+    private val _homeSquad = MutableStateFlow<List<PlayerSelectable>>(emptyList())
+    val homeSquad: StateFlow<List<PlayerSelectable>> = _homeSquad
+
+    private val _awaySquad = MutableStateFlow<List<PlayerSelectable>>(emptyList())
+    val awaySquad: StateFlow<List<PlayerSelectable>> = _awaySquad
+
+    private val _searchResult = MutableStateFlow<RegisteredPlayer?>(null)
+    val searchResult: StateFlow<RegisteredPlayer?> = _searchResult
+
+    fun loadDefaultSquads() {
+        viewModelScope.launch {
+            val allPlayers = playerRepository.getPlayersList()
+            val homePlayers = allPlayers.filter { it.id.startsWith("h") }.map {
+                PlayerSelectable(it.id, it.name, it.role)
+            }
+            val awayPlayers = allPlayers.filter { it.id.startsWith("a") }.map {
+                PlayerSelectable(it.id, it.name, it.role)
+            }
+            _homeSquad.value = homePlayers
+            _awaySquad.value = awayPlayers
+        }
+    }
+
+    fun searchPlayerById(id: String) {
+        viewModelScope.launch {
+            _searchResult.value = playerRepository.findById(id)
+        }
+    }
+
+    fun clearSearchResult() {
+        _searchResult.value = null
+    }
+
+    fun registerNewPlayer(name: String, role: String, forHomeTeam: Boolean) {
+        viewModelScope.launch {
+            val registered = playerRepository.registerPlayer(name, role)
+            val selectable = PlayerSelectable(registered.id, registered.name, registered.role)
+            if (forHomeTeam) {
+                _homeSquad.value = _homeSquad.value + selectable
+            } else {
+                _awaySquad.value = _awaySquad.value + selectable
+            }
+        }
+    }
+
+    fun addPlayerToSquad(player: PlayerSelectable, forHomeTeam: Boolean) {
+        if (forHomeTeam) {
+            if (_homeSquad.value.none { it.id == player.id }) {
+                _homeSquad.value = _homeSquad.value + player
+            }
+        } else {
+            if (_awaySquad.value.none { it.id == player.id }) {
+                _awaySquad.value = _awaySquad.value + player
+            }
+        }
+    }
+}

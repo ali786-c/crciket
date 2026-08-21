@@ -23,6 +23,14 @@ php8.zip
 Homestead.json
 Homestead.yaml
 Thumbs.db
-/cricket-draft-mobile/
 mcp.json
 .freebuff/
+# Android sensitive files
+cricket-draft-mobile/local.properties
+cricket-draft-mobile/.gradle/
+cricket-draft-mobile/app/google-services.json
+cricket-draft-mobile/app/release/
+cricket-draft-mobile/**/*.keystore
+cricket-draft-mobile/**/*.jks
+cricket-draft-mobile/build/
+cricket-draft-mobile/app/build/
