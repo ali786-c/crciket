@@ -75,7 +75,7 @@ class MatchScoringTest extends TestCase
         $match->update(['overs_per_innings' => 8]);
         $innings->update(['maximum_overs' => 8, 'status' => 'completed']);
 
-        $next = app(\App\Services\MatchScoringService::class)->startNextInnings($match->fresh(), $admin->id);
+        $next = app(\App\Modules\Scoring\Services\MatchScoringService::class)->startNextInnings($match->fresh(), $admin->id);
 
         $this->assertSame(2, $next->innings_number);
         $this->assertSame(8, $next->maximum_overs);

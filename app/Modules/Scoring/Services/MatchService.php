@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Modules\Scoring\Services;
 
 use App\Models\AuditLog;
 use App\Models\CricketMatch;

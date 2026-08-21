@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Modules\Draft\Services;
 
 use App\Models\AuditLog;
 use App\Models\Draft;
@@ -590,7 +590,7 @@ class DraftService
                 'picks.round',
                 'picks.tournamentPlayer.playerProfile',
             ]);
-            $activePick = $draft->picks->firstWhere('status', 'active')
+            $activePick = $draft->picks->firstWhere('status', 'active)
                 ?? $draft->picks->firstWhere('status', 'expired');
         }
 

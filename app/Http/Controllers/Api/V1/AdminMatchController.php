@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\CricketMatch;
 use App\Models\Tournament;
-use App\Services\MatchService;
+use App\Modules\Scoring\Services\MatchService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

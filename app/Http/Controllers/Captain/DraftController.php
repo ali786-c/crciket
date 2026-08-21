@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Draft;
 use App\Models\Tournament;
 use App\Models\TournamentPlayer;
-use App\Services\DraftService;
+use App\Modules\Draft\Services\DraftService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Captain;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tournament;
-use App\Services\ReportService;
+use App\Modules\Analytics\Services\ReportService;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Illuminate\View\View;

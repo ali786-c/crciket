@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Services;
+namespace App\Modules\Tournament\Services;
 
 use App\Models\Fixture;
 use App\Models\Team;
 use App\Models\Tournament;
+use App\Modules\Scoring\Services\MatchService;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;

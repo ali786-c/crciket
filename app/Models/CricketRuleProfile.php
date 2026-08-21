@@ -30,6 +30,11 @@ class CricketRuleProfile extends Model
         'version',
         'is_system',
         'is_active',
+        'wide_runs_to_batsman',
+        'noball_runs_to_batsman',
+        'last_man_standing',
+        'max_balls_per_over',
+        'max_runs_per_over',
     ];
 
     protected function casts(): array
@@ -50,6 +55,11 @@ class CricketRuleProfile extends Model
             'version' => 'integer',
             'is_system' => 'boolean',
             'is_active' => 'boolean',
+            'wide_runs_to_batsman' => 'boolean',
+            'noball_runs_to_batsman' => 'boolean',
+            'last_man_standing' => 'boolean',
+            'max_balls_per_over' => 'integer',
+            'max_runs_per_over' => 'integer',
         ];
     }
 

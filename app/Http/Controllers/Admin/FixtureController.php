@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Fixture;
 use App\Models\Tournament;
-use App\Services\FixtureService;
+use App\Modules\Tournament\Services\FixtureService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;

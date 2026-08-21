@@ -84,8 +84,86 @@ class TournamentController extends Controller
         return $data;
     }
 
+    public function compare(\Illuminate\Http\Request $request, Tournament $tournament, \App\Modules\Analytics\Services\PlayerComparisonService $comparisonService): JsonResponse
+    {
+        $this->ensurePublic($tournament);
+        $validated = $request->validate([
+            'player1_id' => ['required', 'integer'],
+            'player2_id' => ['required', 'integer'],
+        ]);
+        $comparison = $comparisonService->comparePlayers($tournament, (int) $validated['player1_id'], (int) $validated['player2_id']);
+        return response()->json(['data' => $comparison]);
+    }
+
     private function ensurePublic(Tournament $tournament): void
     {
         abort_unless($tournament->publiclyVisibleNow(), 404);
+    }
+
+    public function squad(Team $team, \App\Modules\Analytics\Services\TeamComparisonService $teamService): JsonResponse
+    {
+        return response()->json([
+            'data' => $teamService->getClassifiedSquad($team)
+        ]);
+    }
+
+    public function updateDesignations(\Illuminate\Http\Request $request, Team $team): JsonResponse
+    {
+        $validated = $request->validate([
+            'captain_player_id' => ['nullable', 'integer', 'exists:tournament_players,id'],
+            'vice_captain_player_id' => ['nullable', 'integer', 'exists:tournament_players,id', 'different:captain_player_id'],
+            'wicketkeeper_player_id' => ['nullable', 'integer', 'exists:tournament_players,id'],
+        ]);
+
+        \DB::transaction(function () use ($team, $validated) {
+            \App\Models\DraftPick::query()->where('team_id', $team->id)->update([
+                'is_captain' => false,
+                'is_vice_captain' => false,
+                'is_wicketkeeper' => false,
+            ]);
+
+            if (!empty($validated['captain_player_id'])) {
+                \App\Models\DraftPick::query()
+                    ->where('team_id', $team->id)
+                    ->where('tournament_player_id', $validated['captain_player_id'])
+                    ->update(['is_captain' => true]);
+            }
+
+            if (!empty($validated['vice_captain_player_id'])) {
+                \App\Models\DraftPick::query()
+                    ->where('team_id', $team->id)
+                    ->where('tournament_player_id', $validated['vice_captain_player_id'])
+                    ->update(['is_vice_captain' => true]);
+            }
+
+            if (!empty($validated['wicketkeeper_player_id'])) {
+                \App\Models\DraftPick::query()
+                    ->where('team_id', $team->id)
+                    ->where('tournament_player_id', $validated['wicketkeeper_player_id'])
+                    ->update(['is_wicketkeeper' => true]);
+            }
+        });
+
+        return response()->json(['message' => 'Team officer designations updated successfully.']);
+    }
+
+    public function compareTeams(\Illuminate\Http\Request $request, \App\Modules\Analytics\Services\TeamComparisonService $teamService): JsonResponse
+    {
+        $validated = $request->validate([
+            'team1_id' => ['required', 'integer'],
+            'team2_id' => ['required', 'integer', 'different:team1_id'],
+        ]);
+
+        return response()->json([
+            'data' => $teamService->compareTeams((int) $validated['team1_id'], (int) $validated['team2_id'])
+        ]);
+    }
+
+    public function simulateStandings(Tournament $tournament, \App\Modules\Analytics\Services\StandingsSimulationService $simulationService): JsonResponse
+    {
+        $this->ensurePublic($tournament);
+        return response()->json([
+            'data' => $simulationService->simulateQualifications($tournament)
+        ]);
     }
 }

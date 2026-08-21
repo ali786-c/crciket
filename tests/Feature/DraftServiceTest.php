@@ -11,7 +11,7 @@ use App\Models\TeamCaptain;
 use App\Models\Tournament;
 use App\Models\TournamentPlayer;
 use App\Models\User;
-use App\Services\DraftService;
+use App\Modules\Draft\Services\DraftService;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;

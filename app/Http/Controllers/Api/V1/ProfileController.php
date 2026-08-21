@@ -34,4 +34,25 @@ class ProfileController extends Controller
         if (! $profile) return null;
         return ['id' => $profile->id, 'full_name' => $profile->full_name, 'phone' => $profile->phone, 'city' => $profile->city, 'playing_role' => $profile->playing_role, 'batting_style' => $profile->batting_style, 'bowling_style' => $profile->bowling_style, 'bio' => $profile->bio, 'is_active' => $profile->is_active];
     }
+
+    public function stats(Request $request, PlayerProfile $playerProfile, \App\Modules\Analytics\Services\PlayerProfileStatsService $statsService): JsonResponse
+    {
+        $filters = $request->validate([
+            'year' => ['nullable', 'integer', 'min:2000', 'max:2099'],
+            'format' => ['nullable', 'string', 'max:50'],
+            'ball_type' => ['nullable', 'string', 'in:leather,tennis'],
+            'data_source' => ['nullable', 'string', 'in:verified,manual'],
+        ]);
+
+        return response()->json([
+            'data' => $statsService->getPlayerStats($playerProfile, $filters)
+        ]);
+    }
+
+    public function insights(PlayerProfile $playerProfile, \App\Modules\Analytics\Services\PlayerProfileStatsService $statsService): JsonResponse
+    {
+        return response()->json([
+            'data' => $statsService->getPlayerInsights($playerProfile)
+        ]);
+    }
 }

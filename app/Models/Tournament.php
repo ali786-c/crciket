@@ -31,10 +31,13 @@ class Tournament extends Model
         'logo_path',
         'banner_path',
         'squad_size',
+        'has_draft',
         'default_pick_duration',
         'cricket_rule_profile_id',
         'default_overs_per_innings',
         'published_at',
+        'ball_type',
+        'data_source',
     ];
 
     protected function casts(): array
@@ -45,6 +48,7 @@ class Tournament extends Model
             'registration_opens_at' => 'datetime',
             'registration_closes_at' => 'datetime',
             'is_public' => 'boolean',
+            'has_draft' => 'boolean',
             'default_overs_per_innings' => 'integer',
             'published_at' => 'datetime',
         ];

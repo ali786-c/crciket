@@ -47,8 +47,10 @@ Route::get('/tournaments', [PublicTournamentController::class, 'index'])
 Route::get('/live-drafts', [PublicDraftController::class, 'index'])
     ->name('public.live.center');
 Route::get('/tournaments/{tournament}/draft/live', [PublicDraftController::class, 'show'])
+    ->middleware('draft.enabled')
     ->name('public.draft.show');
 Route::get('/tournaments/{tournament}/draft/live/state', [PublicDraftController::class, 'state'])
+    ->middleware('draft.enabled')
     ->name('public.draft.state');
 Route::get('/tournaments/{tournament}/matches', [PublicMatchController::class, 'index'])
     ->name('public.matches.index');
@@ -238,61 +240,63 @@ Route::middleware(['auth', 'verified', 'role:admin'])
             ->middleware('permission:approve players')
             ->name('tournaments.players.reject');
 
-        Route::get('tournaments/{tournament}/draft/setup', [DraftSetupController::class, 'edit'])
-            ->middleware('permission:configure draft')
-            ->name('tournaments.draft.setup');
-        Route::put('tournaments/{tournament}/draft/setup', [DraftSetupController::class, 'update'])
-            ->middleware('permission:configure draft')
-            ->name('tournaments.draft.setup.update');
-        Route::get('tournaments/{tournament}/draft/setup/pdf', [DraftSetupController::class, 'pdf'])
-            ->middleware('permission:configure draft')
-            ->name('tournaments.draft.setup.pdf');
-        Route::get('tournaments/{tournament}/draft/setup/sample-csv', [DraftSetupController::class, 'downloadSample'])
-            ->middleware('permission:configure draft')
-            ->name('tournaments.draft.setup.sample-csv');
-        Route::post('tournaments/{tournament}/draft/setup/import-csv', [DraftSetupController::class, 'importCsv'])
-            ->middleware('permission:configure draft')
-            ->name('tournaments.draft.setup.import-csv');
+        Route::middleware('draft.enabled')->group(function () {
+            Route::get('tournaments/{tournament}/draft/setup', [DraftSetupController::class, 'edit'])
+                ->middleware('permission:configure draft')
+                ->name('tournaments.draft.setup');
+            Route::put('tournaments/{tournament}/draft/setup', [DraftSetupController::class, 'update'])
+                ->middleware('permission:configure draft')
+                ->name('tournaments.draft.setup.update');
+            Route::get('tournaments/{tournament}/draft/setup/pdf', [DraftSetupController::class, 'pdf'])
+                ->middleware('permission:configure draft')
+                ->name('tournaments.draft.setup.pdf');
+            Route::get('tournaments/{tournament}/draft/setup/sample-csv', [DraftSetupController::class, 'downloadSample'])
+                ->middleware('permission:configure draft')
+                ->name('tournaments.draft.setup.sample-csv');
+            Route::post('tournaments/{tournament}/draft/setup/import-csv', [DraftSetupController::class, 'importCsv'])
+                ->middleware('permission:configure draft')
+                ->name('tournaments.draft.setup.import-csv');
 
-        Route::get('tournaments/{tournament}/draft', [DraftController::class, 'show'])
-            ->middleware('permission:control draft')
-            ->name('tournaments.draft.control');
-        Route::get('tournaments/{tournament}/draft/state', [DraftController::class, 'state'])
-            ->middleware('permission:control draft')
-            ->name('tournaments.draft.state');
-        Route::get('tournaments/{tournament}/draft/history.csv', [DraftController::class, 'exportHistory'])
-            ->middleware('permission:control draft')
-            ->name('tournaments.draft.history.export');
-        Route::post('tournaments/{tournament}/draft/start', [DraftController::class, 'start'])
-            ->middleware(['permission:control draft', 'throttle:30,1'])
-            ->name('tournaments.draft.start');
-        Route::post('tournaments/{tournament}/draft/select-player', [DraftController::class, 'selectPlayer'])
-            ->middleware(['permission:control draft', 'throttle:30,1'])
-            ->name('tournaments.draft.select-player');
-        Route::post('tournaments/{tournament}/draft/remove-player', [DraftController::class, 'removePlayer'])
-            ->middleware(['permission:control draft', 'throttle:30,1'])
-            ->name('tournaments.draft.remove-player');
-        Route::post('tournaments/{tournament}/draft/reassign-player', [DraftController::class, 'reassignPlayer'])
-            ->middleware(['permission:control draft', 'throttle:30,1'])
-            ->name('tournaments.draft.reassign-player');
-        Route::post('tournaments/{tournament}/draft/extend', [DraftController::class, 'extend'])
-            ->middleware(['permission:control draft', 'throttle:30,1'])
-            ->name('tournaments.draft.extend');
-        Route::post('tournaments/{tournament}/draft/skip', [DraftController::class, 'skip'])
-            ->middleware(['permission:control draft', 'throttle:30,1'])
-            ->name('tournaments.draft.skip');
-        Route::post('tournaments/{tournament}/draft/pause', [DraftController::class, 'pause'])
-            ->middleware(['permission:control draft', 'throttle:30,1'])
-            ->name('tournaments.draft.pause');
-        Route::post('tournaments/{tournament}/draft/resume', [DraftController::class, 'resume'])
-            ->middleware(['permission:control draft', 'throttle:30,1'])
-            ->name('tournaments.draft.resume');
-        Route::post('tournaments/{tournament}/draft/undo', [DraftController::class, 'undo'])
-            ->middleware(['permission:undo latest pick', 'throttle:30,1'])
-            ->name('tournaments.draft.undo');
-        Route::post('tournaments/{tournament}/draft/reset', [DraftController::class, 'reset'])
-            ->middleware(['permission:control draft', 'throttle:30,1'])
-            ->name('tournaments.draft.reset');
+            Route::get('tournaments/{tournament}/draft', [DraftController::class, 'show'])
+                ->middleware('permission:control draft')
+                ->name('tournaments.draft.control');
+            Route::get('tournaments/{tournament}/draft/state', [DraftController::class, 'state'])
+                ->middleware('permission:control draft')
+                ->name('tournaments.draft.state');
+            Route::get('tournaments/{tournament}/draft/history.csv', [DraftController::class, 'exportHistory'])
+                ->middleware('permission:control draft')
+                ->name('tournaments.draft.history.export');
+            Route::post('tournaments/{tournament}/draft/start', [DraftController::class, 'start'])
+                ->middleware(['permission:control draft', 'throttle:30,1'])
+                ->name('tournaments.draft.start');
+            Route::post('tournaments/{tournament}/draft/select-player', [DraftController::class, 'selectPlayer'])
+                ->middleware(['permission:control draft', 'throttle:30,1'])
+                ->name('tournaments.draft.select-player');
+            Route::post('tournaments/{tournament}/draft/remove-player', [DraftController::class, 'removePlayer'])
+                ->middleware(['permission:control draft', 'throttle:30,1'])
+                ->name('tournaments.draft.remove-player');
+            Route::post('tournaments/{tournament}/draft/reassign-player', [DraftController::class, 'reassignPlayer'])
+                ->middleware(['permission:control draft', 'throttle:30,1'])
+                ->name('tournaments.draft.reassign-player');
+            Route::post('tournaments/{tournament}/draft/extend', [DraftController::class, 'extend'])
+                ->middleware(['permission:control draft', 'throttle:30,1'])
+                ->name('tournaments.draft.extend');
+            Route::post('tournaments/{tournament}/draft/skip', [DraftController::class, 'skip'])
+                ->middleware(['permission:control draft', 'throttle:30,1'])
+                ->name('tournaments.draft.skip');
+            Route::post('tournaments/{tournament}/draft/pause', [DraftController::class, 'pause'])
+                ->middleware(['permission:control draft', 'throttle:30,1'])
+                ->name('tournaments.draft.pause');
+            Route::post('tournaments/{tournament}/draft/resume', [DraftController::class, 'resume'])
+                ->middleware(['permission:control draft', 'throttle:30,1'])
+                ->name('tournaments.draft.resume');
+            Route::post('tournaments/{tournament}/draft/undo', [DraftController::class, 'undo'])
+                ->middleware(['permission:undo latest pick', 'throttle:30,1'])
+                ->name('tournaments.draft.undo');
+            Route::post('tournaments/{tournament}/draft/reset', [DraftController::class, 'reset'])
+                ->middleware(['permission:control draft', 'throttle:30,1'])
+                ->name('tournaments.draft.reset');
+        });
     });
 
 Route::middleware(['auth', 'verified', 'role:super_admin'])->prefix('super-admin')->name('super-admin.')->group(function () {

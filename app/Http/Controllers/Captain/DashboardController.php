@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Captain;
 use App\Http\Controllers\Controller;
 use App\Models\TeamCaptain;
 use Illuminate\Support\Collection;
-use App\Services\ReportService;
+use App\Modules\Analytics\Services\ReportService;
 use Illuminate\View\View;
 
 class DashboardController extends Controller

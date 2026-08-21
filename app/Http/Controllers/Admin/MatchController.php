@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CricketMatch;
 use App\Models\Tournament;
-use App\Services\MatchService;
+use App\Modules\Scoring\Services\MatchService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;

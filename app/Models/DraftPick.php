@@ -18,6 +18,9 @@ class DraftPick extends Model
         'pick_duration',
         'status',
         'tournament_player_id',
+        'is_captain',
+        'is_vice_captain',
+        'is_wicketkeeper',
         'selected_by',
         'started_at',
         'expired_at',
@@ -34,6 +37,9 @@ class DraftPick extends Model
             'expired_at' => 'datetime',
             'selected_at' => 'datetime',
             'skipped_at' => 'datetime',
+            'is_captain' => 'boolean',
+            'is_vice_captain' => 'boolean',
+            'is_wicketkeeper' => 'boolean',
         ];
     }
 

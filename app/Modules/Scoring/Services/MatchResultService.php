@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Services;
+namespace App\Modules\Scoring\Services;
 
 use App\Models\CricketMatch;
 use App\Models\Tournament;
+use App\Modules\Tournament\Services\StandingsService;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;

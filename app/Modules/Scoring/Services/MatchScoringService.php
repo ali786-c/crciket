@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Modules\Scoring\Services;
 
 use App\Models\CricketMatch;
 use App\Models\InningsBattingStat;
@@ -40,9 +40,47 @@ class MatchScoringService
                 $this->fail('innings', 'The current innings is not live.');
             }
             $profile = $match->ruleProfile;
-            $maxLegalBalls = (int) $innings->maximum_overs * (int) $profile->legal_balls_per_over;
-            if ((int) $innings->legal_balls >= $maxLegalBalls) {
+
+            // Calculate dynamic over number and ball number
+            $latestDelivery = $innings->deliveries()->whereNull('voided_at')->orderBy('sequence_number', 'desc')->first();
+            if (! $latestDelivery) {
+                $overNumber = 1;
+                $ballNumber = 1;
+            } else {
+                $currentOverNum = $latestDelivery->over_number;
+                $currentOverDeliveries = $innings->deliveries()
+                    ->whereNull('voided_at')
+                    ->where('over_number', $currentOverNum)
+                    ->get();
+                
+                $legalInCurrent = $currentOverDeliveries->where('is_legal_delivery', true)->count();
+                $totalInCurrent = $currentOverDeliveries->count();
+                
+                $overIsComplete = ($legalInCurrent >= (int) $profile->legal_balls_per_over)
+                    || ($profile->max_balls_per_over !== null && $totalInCurrent >= (int) $profile->max_balls_per_over);
+                
+                if ($overIsComplete) {
+                    $overNumber = $currentOverNum + 1;
+                    $ballNumber = 1;
+                } else {
+                    $overNumber = $currentOverNum;
+                    $ballNumber = $legalInCurrent + 1;
+                }
+            }
+
+            if ($overNumber > (int) $innings->maximum_overs) {
                 $this->fail('innings', 'The maximum overs for this innings are complete.');
+            }
+
+            if ($profile->max_runs_per_over !== null && $latestDelivery && $overNumber === $latestDelivery->over_number) {
+                $runsInCurrentOver = $innings->deliveries()
+                    ->whereNull('voided_at')
+                    ->where('over_number', $latestDelivery->over_number)
+                    ->sum('total_runs');
+                
+                if ($runsInCurrentOver >= (int) $profile->max_runs_per_over) {
+                    $this->fail('innings', 'The maximum runs limit for this over has been reached.');
+                }
             }
 
             $striker = $innings->match->players()->whereKey((int) ($data['striker_id'] ?? 0))->where('team_id', $innings->batting_team_id)->where('selection_type', 'playing_xi')->first();
@@ -62,12 +100,11 @@ class MatchScoringService
 
             $legal = $runs['wides'] === 0 && $runs['no_balls'] === 0;
             $sequence = ((int) $innings->deliveries()->whereNull('voided_at')->max('sequence_number')) + 1;
-            $legalBalls = (int) $innings->legal_balls;
             $delivery = MatchDelivery::create([
                 'match_id' => $match->id,
                 'innings_id' => $innings->id,
-                'over_number' => intdiv($legalBalls, (int) $profile->legal_balls_per_over) + 1,
-                'ball_number' => ($legalBalls % (int) $profile->legal_balls_per_over) + 1,
+                'over_number' => $overNumber,
+                'ball_number' => $ballNumber,
                 'sequence_number' => $sequence,
                 'striker_id' => $striker->id,
                 'non_striker_id' => $nonStriker->id,
@@ -79,6 +116,10 @@ class MatchScoringService
                 'recorded_by' => $actorId,
                 'recorded_at' => now(),
                 'revision' => $match->revision + 1,
+                'local_uuid' => $data['local_uuid'] ?? null,
+                'device_timestamp' => isset($data['device_timestamp']) ? \Illuminate\Support\Carbon::parse($data['device_timestamp']) : null,
+                'wagon_x' => isset($data['wagon_x']) ? (float) $data['wagon_x'] : null,
+                'wagon_y' => isset($data['wagon_y']) ? (float) $data['wagon_y'] : null,
             ]);
 
             if ($wicketInput) {
@@ -107,6 +148,10 @@ class MatchScoringService
 
             return $delivery->fresh(['striker', 'nonStriker', 'bowler', 'wicket.dismissedPlayer']);
         });
+
+        event(new \App\Modules\Scoring\Events\DeliveryRecorded($delivery));
+
+        return $delivery;
     }
 
     public function startNextInnings(CricketMatch $match, int $actorId): MatchInnings
@@ -147,16 +192,25 @@ class MatchScoringService
             $this->rebuildStats($innings->fresh(['match']), $match->ruleProfile);
             $match->update(['status' => 'live', 'revision' => $match->revision + 1, 'last_event_at' => now(), 'updated_by' => $actorId]);
         });
+
+        event(new \App\Modules\Scoring\Events\DeliveryUndone($match->fresh()));
     }
 
     public function rebuildStats(MatchInnings $innings, $profile = null): void
     {
+        $profile ??= $innings->match->ruleProfile;
         $deliveries = $innings->deliveries()->with(['wicket', 'wicket.dismissedPlayer'])->whereNull('voided_at')->get();
         $players = $innings->match->players()->where('selection_type', 'playing_xi')->get();
         foreach ($players->where('team_id', $innings->batting_team_id) as $player) {
             $bat = $deliveries->where('striker_id', $player->id);
             $wicket = $deliveries->pluck('wicket')->filter(fn ($w) => $w && $w->dismissed_player_id === $player->id)->first();
             $runs = $bat->sum('runs_off_bat');
+            if ($profile?->wide_runs_to_batsman) {
+                $runs += $bat->sum('wides');
+            }
+            if ($profile?->noball_runs_to_batsman) {
+                $runs += $bat->sum('no_balls');
+            }
             $balls = $bat->where('is_legal_delivery', true)->count();
             InningsBattingStat::updateOrCreate(['innings_id' => $innings->id, 'match_player_id' => $player->id], [
                 'batting_position' => $player->batting_order,
@@ -206,7 +260,7 @@ class MatchScoringService
     {
         $reason = null;
         if ($innings->target_runs !== null && $innings->total_runs >= $innings->target_runs) $reason = 'target_reached';
-        elseif ($innings->wickets >= $profile->maximum_wickets) $reason = 'all_out';
+        elseif ($innings->wickets >= ($profile->last_man_standing ? $profile->playing_xi_size : $profile->maximum_wickets)) $reason = 'all_out';
         elseif ($innings->legal_balls >= $innings->maximum_overs * $profile->legal_balls_per_over) $reason = 'overs_complete';
         if ($reason) {
             $innings->update(['status' => 'completed', 'completed_reason' => $reason, 'completed_at' => now()]);

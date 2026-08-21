@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Modules\Tournament\Services;
 
 use App\Models\Tournament;
 use App\Models\TournamentStanding;

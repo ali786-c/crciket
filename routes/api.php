@@ -15,6 +15,9 @@ use App\Http\Controllers\Api\V1\ScoringController;
 use App\Http\Controllers\Api\V1\SyncController;
 use App\Http\Controllers\Api\V1\SuperAdminController;
 use App\Http\Controllers\Api\V1\TournamentController;
+use App\Http\Controllers\Api\V1\SearchController;
+use App\Http\Controllers\Api\V1\NewsController;
+use App\Http\Controllers\Api\V1\OrganizationController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->middleware('throttle:api')->group(function () {
@@ -23,10 +26,22 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
     Route::get('tournaments/{tournament}', [TournamentController::class, 'show'])->name('api.v1.tournaments.show');
     Route::get('tournaments/{tournament}/teams', [TournamentController::class, 'teams'])->name('api.v1.tournaments.teams');
     Route::get('tournaments/{tournament}/players', [TournamentController::class, 'players'])->name('api.v1.tournaments.players');
+    Route::get('tournaments/{tournament}/players/compare', [TournamentController::class, 'compare'])->name('api.v1.tournaments.players.compare');
     Route::get('tournaments/{tournament}/fixtures', [TournamentController::class, 'fixtures'])->name('api.v1.tournaments.fixtures');
     Route::get('tournaments/{tournament}/standings', [TournamentController::class, 'standings'])->name('api.v1.tournaments.standings');
+    Route::get('tournaments/{tournament}/standings/simulate', [TournamentController::class, 'simulateStandings'])->name('api.v1.tournaments.standings.simulate');
     Route::get('matches/{match}/state', [MatchController::class, 'state'])->name('api.v1.matches.state');
     Route::get('tournaments/{tournament}/sync', [SyncController::class, 'tournament'])->name('api.v1.tournaments.sync');
+    Route::get('players/{playerProfile}/stats', [ProfileController::class, 'stats'])->name('api.v1.players.stats');
+    Route::get('players/{playerProfile}/insights', [ProfileController::class, 'insights'])->name('api.v1.players.insights');
+    Route::get('teams/{team}/squad', [TournamentController::class, 'squad'])->name('api.v1.teams.squad');
+    Route::post('teams/{team}/designations', [TournamentController::class, 'updateDesignations'])->middleware('auth:sanctum')->name('api.v1.teams.designations');
+    Route::get('teams/compare', [TournamentController::class, 'compareTeams'])->name('api.v1.teams.compare');
+    Route::get('search', [SearchController::class, 'search'])->name('api.v1.search');
+    Route::get('news', [NewsController::class, 'index'])->name('api.v1.news.index');
+    Route::get('news/{newsArticle}', [NewsController::class, 'show'])->name('api.v1.news.show');
+    Route::get('organizations', [OrganizationController::class, 'index'])->name('api.v1.organizations.index');
+    Route::get('organizations/{organization}', [OrganizationController::class, 'show'])->name('api.v1.organizations.show');
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('auth/me', [AuthController::class, 'me'])->name('api.v1.auth.me');
@@ -36,11 +51,14 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
         Route::patch('profile', [ProfileController::class, 'update'])->name('api.v1.profile.update');
         Route::get('tournaments/{tournament}/registration', [RegistrationController::class, 'mine'])->name('api.v1.tournaments.registration.mine');
         Route::post('tournaments/{tournament}/registration', [RegistrationController::class, 'store'])->middleware('throttle:20,1')->name('api.v1.tournaments.registration.store');
-        Route::get('tournaments/{tournament}/draft/state', [DraftController::class, 'state'])->middleware(['role:captain', 'permission:make draft pick'])->name('api.v1.tournaments.draft.state');
-        Route::post('tournaments/{tournament}/draft/pick', [DraftController::class, 'pick'])->middleware(['role:captain', 'permission:make draft pick'])->name('api.v1.tournaments.draft.pick');
+        Route::get('tournaments/{tournament}/draft/state', [DraftController::class, 'state'])->middleware(['role:captain', 'permission:make draft pick', 'draft.enabled'])->name('api.v1.tournaments.draft.state');
+        Route::post('tournaments/{tournament}/draft/pick', [DraftController::class, 'pick'])->middleware(['role:captain', 'permission:make draft pick', 'draft.enabled'])->name('api.v1.tournaments.draft.pick');
         Route::post('matches/{match}/deliveries', [ScoringController::class, 'store'])->middleware(['permission:control draft', 'throttle:120,1'])->name('api.v1.matches.deliveries.store');
+        Route::post('matches/{match}/deliveries/sync', [ScoringController::class, 'sync'])->middleware(['permission:control draft', 'throttle:120,1'])->name('api.v1.matches.deliveries.sync');
+        Route::patch('deliveries/{matchDelivery}', [ScoringController::class, 'editDelivery'])->middleware(['permission:control draft', 'throttle:120,1'])->name('api.v1.deliveries.edit');
         Route::post('matches/{match}/next-innings', [ScoringController::class, 'nextInnings'])->middleware(['permission:control draft', 'throttle:30,1'])->name('api.v1.matches.next-innings');
         Route::post('matches/{match}/undo', [ScoringController::class, 'undo'])->middleware(['permission:control draft', 'throttle:30,1'])->name('api.v1.matches.undo');
+        Route::get('matches/{match}/mvp', [ScoringController::class, 'mvp'])->name('api.v1.matches.mvp');
         Route::get('admin/tournaments', [AdminTournamentController::class, 'index'])->middleware('permission:manage tournaments')->name('api.v1.admin.tournaments.index');
         Route::post('admin/tournaments', [AdminTournamentController::class, 'store'])->middleware(['permission:manage tournaments', 'throttle:30,1'])->name('api.v1.admin.tournaments.store');
         Route::get('admin/tournaments/{tournament}', [AdminTournamentController::class, 'show'])->middleware('permission:manage tournaments')->name('api.v1.admin.tournaments.show');

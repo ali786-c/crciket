@@ -23,6 +23,9 @@ class AdminTournamentController extends Controller
     {
         $data = $this->validated($request, true);
         $data['is_public'] = $request->boolean('is_public', true);
+        $data['has_draft'] = $request->boolean('has_draft', false);
+        $data['ball_type'] = $request->input('ball_type', 'leather');
+        $data['data_source'] = $request->input('data_source', 'verified');
         $data['logo_path'] = $request->hasFile('logo') ? $request->file('logo')->store('tournaments', 'public') : null;
         $data['banner_path'] = $request->hasFile('banner') ? $request->file('banner')->store('tournaments', 'public') : null;
         $tournament = Tournament::create(array_merge($data, ['status' => 'draft']));
@@ -61,7 +64,12 @@ class AdminTournamentController extends Controller
             if ($tournament->banner_path) Storage::disk('public')->delete($tournament->banner_path);
             $data['banner_path'] = $request->file('banner')->store('tournaments', 'public');
         }
-        $tournament->update(array_merge($data, ['is_public' => $request->boolean('is_public', $tournament->is_public)]));
+        $tournament->update(array_merge($data, [
+            'is_public' => $request->boolean('is_public', $tournament->is_public),
+            'has_draft' => $request->boolean('has_draft', $tournament->has_draft),
+            'ball_type' => $request->input('ball_type', $tournament->ball_type),
+            'data_source' => $request->input('data_source', $tournament->data_source),
+        ]));
         AuditLog::create(['user_id' => $request->user()->id, 'tournament_id' => $tournament->id, 'action' => 'tournament.configuration_updated', 'before' => $before, 'after' => $tournament->fresh()->only(array_keys($before)), 'metadata' => ['source' => 'api'], 'ip_address' => $request->ip(), 'user_agent' => $request->userAgent()]);
         return response()->json(['data' => $tournament->fresh(), 'message' => 'Tournament updated successfully.']);
     }
@@ -82,7 +90,32 @@ class AdminTournamentController extends Controller
     private function validated(Request $request, bool $creating): array
     {
         $required = $creating ? 'required' : 'sometimes';
-        $rules = ['name' => [$required, 'string', 'max:150'], 'season_name' => ['nullable', 'string', 'max:100'], 'slug' => [$required, 'string', 'max:180', 'alpha_dash', Rule::unique('tournaments', 'slug')->ignore($request->route('tournament')?->id)], 'description' => ['nullable', 'string', 'max:5000'], 'location' => ['nullable', 'string', 'max:150'], 'venue' => ['nullable', 'string', 'max:150'], 'city' => ['nullable', 'string', 'max:100'], 'timezone' => [$creating ? 'required' : 'sometimes', 'timezone'], 'starts_on' => ['nullable', 'date'], 'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'], 'registration_opens_at' => ['nullable', 'date'], 'registration_closes_at' => ['nullable', 'date', 'after_or_equal:registration_opens_at'], 'squad_size' => [$creating ? 'required' : 'sometimes', 'integer', 'min:1', 'max:99'], 'default_pick_duration' => [$creating ? 'required' : 'sometimes', 'integer', 'min:5', 'max:3600'], 'cricket_rule_profile_id' => ['nullable', 'integer', 'exists:cricket_rule_profiles,id'], 'default_overs_per_innings' => ['nullable', 'integer', 'min:1', 'max:100'], 'is_public' => ['sometimes', 'boolean'], 'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'], 'banner' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'], 'remove_logo' => ['sometimes', 'boolean'], 'remove_banner' => ['sometimes', 'boolean']];
+        $rules = [
+            'name' => [$required, 'string', 'max:150'],
+            'season_name' => ['nullable', 'string', 'max:100'],
+            'slug' => [$required, 'string', 'max:180', 'alpha_dash', Rule::unique('tournaments', 'slug')->ignore($request->route('tournament')?->id)],
+            'description' => ['nullable', 'string', 'max:5000'],
+            'location' => ['nullable', 'string', 'max:150'],
+            'venue' => ['nullable', 'string', 'max:150'],
+            'city' => ['nullable', 'string', 'max:100'],
+            'timezone' => [$creating ? 'required' : 'sometimes', 'timezone'],
+            'starts_on' => ['nullable', 'date'],
+            'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
+            'registration_opens_at' => ['nullable', 'date'],
+            'registration_closes_at' => ['nullable', 'date', 'after_or_equal:registration_opens_at'],
+            'squad_size' => [$creating ? 'required' : 'sometimes', 'integer', 'min:1', 'max:99'],
+            'has_draft' => ['sometimes', 'boolean'],
+            'ball_type' => ['sometimes', 'string', 'in:leather,tennis'],
+            'data_source' => ['sometimes', 'string', 'in:verified,manual'],
+            'default_pick_duration' => [$creating ? 'required' : 'sometimes', 'integer', 'min:5', 'max:3600'],
+            'cricket_rule_profile_id' => ['nullable', 'integer', 'exists:cricket_rule_profiles,id'],
+            'default_overs_per_innings' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'is_public' => ['sometimes', 'boolean'],
+            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'banner' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
+            'remove_logo' => ['sometimes', 'boolean'],
+            'remove_banner' => ['sometimes', 'boolean']
+        ];
         return Arr::only($request->validate($rules), array_keys($rules));
     }
 
