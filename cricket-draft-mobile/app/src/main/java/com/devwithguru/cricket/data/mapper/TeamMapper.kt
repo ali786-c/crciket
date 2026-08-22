@@ -1,0 +1,30 @@
+package com.devwithguru.cricket.data.mapper
+
+import com.devwithguru.cricket.data.db.entity.TeamEntity
+import com.devwithguru.cricket.domain.model.Team
+
+fun TeamEntity.toDomain() = Team(
+    id = id,
+    name = name,
+    shortName = shortName,
+    tournamentId = tournamentId,
+    tournamentName = tournamentName,
+    playerCount = playerCount,
+    wins = wins,
+    losses = losses,
+    ties = ties,
+    foundedYear = foundedYear
+)
+
+fun Team.toEntity() = TeamEntity(
+    id = id,
+    name = name,
+    shortName = shortName,
+    tournamentId = tournamentId,
+    tournamentName = tournamentName,
+    playerCount = playerCount,
+    wins = wins,
+    losses = losses,
+    ties = ties,
+    foundedYear = foundedYear
+)

@@ -4,10 +4,10 @@ import com.devwithguru.cricket.data.db.entity.BatterStatsEntity
 import com.devwithguru.cricket.data.db.entity.BowlerStatsEntity
 import com.devwithguru.cricket.data.db.entity.PartnershipEventEntity
 import com.devwithguru.cricket.data.db.entity.WicketEventEntity
-import com.devwithguru.cricket.ui.screens.match.BatterState
-import com.devwithguru.cricket.ui.screens.match.BowlerState
-import com.devwithguru.cricket.ui.screens.match.PartnershipEvent
-import com.devwithguru.cricket.ui.screens.match.WicketEvent
+import com.devwithguru.cricket.domain.model.BatterState
+import com.devwithguru.cricket.domain.model.BowlerState
+import com.devwithguru.cricket.domain.model.PartnershipEvent
+import com.devwithguru.cricket.domain.model.WicketEvent
 
 // --- BatterState ---
 fun BatterStatsEntity.toDomain() = BatterState(

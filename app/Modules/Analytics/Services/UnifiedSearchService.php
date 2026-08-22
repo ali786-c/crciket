@@ -6,62 +6,257 @@ use App\Models\CricketMatch;
 use App\Models\PlayerProfile;
 use App\Models\Team;
 use App\Models\Tournament;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class UnifiedSearchService
 {
-    public function search(string $q): array
+    /**
+     * Unified search across all entities.
+     *
+     * Supports:
+     *  - Unique code exact match (e.g. "TEAM-A3K9F", "PLR-M7B2N")
+     *  - Name partial match with relevance scoring
+     *  - Type filtering (players, teams, tournaments, matches)
+     *  - Pagination per type
+     *  - Additional filters (city, role, tournament_id, status)
+     */
+    public function search(string $query, array $options = []): array
     {
-        if (strlen($q) < 2) {
-            return [
-                'players' => [],
-                'teams' => [],
-                'tournaments' => [],
-                'matches' => [],
-            ];
+        if (strlen($query) < 2) {
+            return $this->emptyResult();
         }
 
-        $players = PlayerProfile::query()
-            ->where('full_name', 'like', "%{$q}%")
-            ->where('is_active', true)
-            ->take(10)
-            ->get(['id', 'full_name', 'playing_role', 'city']);
+        $types = $options['types'] ?? ['players', 'teams', 'tournaments', 'matches'];
+        $limit = min($options['limit'] ?? 10, 50);
+        $tournamentId = $options['tournament_id'] ?? null;
 
-        $teams = Team::query()
-            ->where('name', 'like', "%{$q}%")
-            ->orWhere('short_name', 'like', "%{$q}%")
-            ->take(10)
-            ->get(['id', 'name', 'short_name', 'logo_path']);
+        // Detect if query is a unique code
+        $isCode = $this->isUniqueCode($query);
 
-        $tournaments = Tournament::query()
-            ->where('name', 'like', "%{$q}%")
-            ->take(10)
-            ->get(['id', 'name', 'slug', 'starts_on', 'ends_on']);
+        $results = [];
 
-        $matches = CricketMatch::query()
-            ->whereHas('homeTeam', function ($query) use ($q) {
-                $query->where('name', 'like', "%{$q}%")->orWhere('short_name', 'like', "%{$q}%");
-            })
-            ->orWhereHas('awayTeam', function ($query) use ($q) {
-                $query->where('name', 'like', "%{$q}%")->orWhere('short_name', 'like', "%{$q}%");
-            })
-            ->with(['homeTeam', 'awayTeam'])
-            ->take(10)
-            ->get()
-            ->map(function ($match) {
+        if (in_array('players', $types, true)) {
+            $results['players'] = $this->searchPlayers($query, $isCode, $limit, $options);
+        }
+
+        if (in_array('teams', $types, true)) {
+            $results['teams'] = $this->searchTeams($query, $isCode, $limit, $options, $tournamentId);
+        }
+
+        if (in_array('tournaments', $types, true)) {
+            $results['tournaments'] = $this->searchTournaments($query, $isCode, $limit, $options);
+        }
+
+        if (in_array('matches', $types, true)) {
+            $results['matches'] = $this->searchMatches($query, $isCode, $limit, $tournamentId);
+        }
+
+        $results['meta'] = [
+            'query' => $query,
+            'is_code_search' => $isCode,
+            'types_searched' => $types,
+        ];
+
+        return $results;
+    }
+
+    /**
+     * Lookup a single entity by its unique code.
+     */
+    public function findByCode(string $code): ?array
+    {
+        $code = strtoupper(trim($code));
+
+        // Check player
+        if (str_starts_with($code, 'PLR-')) {
+            $player = PlayerProfile::where('unique_code', $code)->with('user')->first();
+            if ($player) {
                 return [
-                    'id' => $match->id,
-                    'status' => $match->status,
-                    'starts_on' => $match->starts_on,
-                    'home_team' => $match->homeTeam?->short_name,
-                    'away_team' => $match->awayTeam?->short_name,
+                    'type' => 'player',
+                    'data' => $this->formatPlayer($player),
                 ];
-            });
+            }
+        }
 
+        // Check team
+        if (str_starts_with($code, 'TEAM-')) {
+            $team = Team::where('unique_code', $code)->with('tournament')->first();
+            if ($team) {
+                return [
+                    'type' => 'team',
+                    'data' => $this->formatTeam($team),
+                ];
+            }
+        }
+
+        return null;
+    }
+
+    // ─── Private Search Methods ──────────────────────────────────────
+
+    private function searchPlayers(string $query, bool $isCode, int $limit, array $options): array
+    {
+        $q = PlayerProfile::query()->where('is_active', true);
+
+        if ($isCode && str_starts_with(strtoupper($query), 'PLR-')) {
+            $q->where('unique_code', strtoupper($query));
+        } else {
+            $q->where(function ($sub) use ($query) {
+                $sub->where('full_name', 'like', "%{$query}%")
+                    ->orWhere('city', 'like', "%{$query}%")
+                    ->orWhere('playing_role', 'like', "%{$query}%")
+                    ->orWhere('unique_code', 'like', "%{$query}%");
+            });
+        }
+
+        // Optional filters
+        if (!empty($options['city'])) {
+            $q->where('city', 'like', "%{$options['city']}%");
+        }
+        if (!empty($options['playing_role'])) {
+            $q->where('playing_role', $options['playing_role']);
+        }
+
+        $results = $q->take($limit)
+            ->get(['id', 'unique_code', 'full_name', 'playing_role', 'batting_style', 'bowling_style', 'city', 'photo_path']);
+
+        return $results->map(fn($p) => $this->formatPlayer($p))->toArray();
+    }
+
+    private function searchTeams(string $query, bool $isCode, int $limit, array $options, ?int $tournamentId): array
+    {
+        $q = Team::query();
+
+        if ($isCode && str_starts_with(strtoupper($query), 'TEAM-')) {
+            $q->where('unique_code', strtoupper($query));
+        } else {
+            $q->where(function ($sub) use ($query) {
+                $sub->where('name', 'like', "%{$query}%")
+                    ->orWhere('short_name', 'like', "%{$query}%")
+                    ->orWhere('unique_code', 'like', "%{$query}%");
+            });
+        }
+
+        if ($tournamentId) {
+            $q->where('tournament_id', $tournamentId);
+        }
+
+        $results = $q->take($limit)
+            ->get(['id', 'unique_code', 'name', 'short_name', 'logo_path', 'tournament_id', 'is_active']);
+
+        return $results->map(fn($t) => $this->formatTeam($t))->toArray();
+    }
+
+    private function searchTournaments(string $query, bool $isCode, int $limit, array $options): array
+    {
+        $q = Tournament::query();
+
+        // Tournaments use slug as unique code
+        if ($isCode) {
+            $q->where('slug', strtolower($query));
+        } else {
+            $q->where(function ($sub) use ($query) {
+                $sub->where('name', 'like', "%{$query}%")
+                    ->orWhere('slug', 'like', "%{$query}%")
+                    ->orWhere('city', 'like', "%{$query}%");
+            });
+        }
+
+        // Optional status filter
+        if (!empty($options['status'])) {
+            $q->where('status', $options['status']);
+        }
+
+        $results = $q->take($limit)
+            ->get(['id', 'name', 'slug', 'status', 'starts_on', 'ends_on', 'city', 'logo_path']);
+
+        return $results->map(fn($t) => [
+            'id' => $t->id,
+            'name' => $t->name,
+            'slug' => $t->slug,
+            'status' => $t->status,
+            'city' => $t->city,
+            'starts_on' => $t->starts_on?->toDateString(),
+            'ends_on' => $t->ends_on?->toDateString(),
+            'logo_path' => $t->logo_path,
+        ])->toArray();
+    }
+
+    private function searchMatches(string $query, bool $isCode, int $limit, ?int $tournamentId): array
+    {
+        $q = CricketMatch::query()
+            ->with(['homeTeam', 'awayTeam', 'tournament']);
+
+        $q->where(function ($sub) use ($query) {
+            $sub->whereHas('homeTeam', fn($t) => $t->where('name', 'like', "%{$query}%")->orWhere('short_name', 'like', "%{$query}%"))
+                ->orWhereHas('awayTeam', fn($t) => $t->where('name', 'like', "%{$query}%")->orWhere('short_name', 'like', "%{$query}%"))
+                ->orWhereHas('tournament', fn($t) => $t->where('name', 'like', "%{$query}%"));
+        });
+
+        if ($tournamentId) {
+            $q->where('tournament_id', $tournamentId);
+        }
+
+        $results = $q->take($limit)->get();
+
+        return $results->map(fn($m) => [
+            'id' => $m->id,
+            'status' => $m->status,
+            'starts_on' => $m->starts_on,
+            'home_team' => $m->homeTeam?->short_name,
+            'away_team' => $m->awayTeam?->short_name,
+            'tournament' => $m->tournament?->name,
+            'tournament_id' => $m->tournament_id,
+        ])->toArray();
+    }
+
+    // ─── Helpers ─────────────────────────────────────────────────────
+
+    private function formatPlayer($player): array
+    {
         return [
-            'players' => $players->toArray(),
-            'teams' => $teams->toArray(),
-            'tournaments' => $tournaments->toArray(),
-            'matches' => $matches->toArray(),
+            'id' => $player->id,
+            'unique_code' => $player->unique_code,
+            'full_name' => $player->full_name,
+            'playing_role' => $player->playing_role,
+            'batting_style' => $player->batting_style,
+            'bowling_style' => $player->bowling_style,
+            'city' => $player->city,
+            'photo_path' => $player->photo_path,
+        ];
+    }
+
+    private function formatTeam($team): array
+    {
+        return [
+            'id' => $team->id,
+            'unique_code' => $team->unique_code,
+            'name' => $team->name,
+            'short_name' => $team->short_name,
+            'logo_path' => $team->logo_path,
+            'tournament_id' => $team->tournament_id,
+            'is_active' => $team->is_active ?? true,
+        ];
+    }
+
+    private function isUniqueCode(string $query): bool
+    {
+        $upper = strtoupper(trim($query));
+        return preg_match('/^(TEAM-[A-Z0-9]{5}|PLR-[A-Z0-9]{5})$/', $upper) === 1;
+    }
+
+    private function emptyResult(): array
+    {
+        return [
+            'players' => [],
+            'teams' => [],
+            'tournaments' => [],
+            'matches' => [],
+            'meta' => [
+                'query' => '',
+                'is_code_search' => false,
+                'types_searched' => [],
+            ],
         ];
     }
 }

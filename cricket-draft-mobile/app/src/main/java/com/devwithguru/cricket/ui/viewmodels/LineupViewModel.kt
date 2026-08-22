@@ -3,8 +3,8 @@ package com.devwithguru.cricket.ui.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.devwithguru.cricket.data.repository.PlayerRepository
-import com.devwithguru.cricket.ui.screens.PlayerSelectable
-import com.devwithguru.cricket.ui.screens.RegisteredPlayer
+import com.devwithguru.cricket.ui.feature.match.toss.PlayerSelectable
+import com.devwithguru.cricket.domain.model.RegisteredPlayer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

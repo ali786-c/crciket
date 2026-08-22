@@ -2,6 +2,7 @@ package com.devwithguru.cricket
 
 import android.os.Bundle
 import android.widget.Toast
+import com.devwithguru.cricket.R
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.compose.BackHandler
@@ -10,31 +11,36 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.devwithguru.cricket.ui.screens.LoginScreen
-import com.devwithguru.cricket.ui.screens.PlayerOnboardingScreen
-import com.devwithguru.cricket.ui.screens.UnifiedHomeScreen
-import com.devwithguru.cricket.ui.screens.CreateMatchScreen
-import com.devwithguru.cricket.ui.screens.CreateTournamentScreen
-import com.devwithguru.cricket.ui.screens.MyTournamentsScreen
-import com.devwithguru.cricket.ui.screens.TournamentHubScreen
-import com.devwithguru.cricket.ui.screens.TeamDetailScreen
-import com.devwithguru.cricket.ui.screens.TossLineupScreen
-import com.devwithguru.cricket.ui.screens.TossScreen
-import com.devwithguru.cricket.ui.screens.match.LiveScorerScreen
-import com.devwithguru.cricket.ui.screens.MatchCenterScreen
-import com.devwithguru.cricket.ui.screens.PlayerProfileScreen
-import com.devwithguru.cricket.ui.screens.GlobalSearchScreen
-import com.devwithguru.cricket.ui.screens.MatchEditorScreen
-import com.devwithguru.cricket.ui.screens.RecentMatchesScreen
-import com.devwithguru.cricket.ui.screens.ScheduledFixture
-import com.devwithguru.cricket.ui.screens.FixtureStore
-import com.devwithguru.cricket.ui.screens.match.LiveScorerViewModel
+import androidx.compose.ui.res.stringResource
+import com.devwithguru.cricket.ui.feature.auth.LoginScreen
+import com.devwithguru.cricket.ui.feature.auth.PlayerOnboardingScreen
+import com.devwithguru.cricket.ui.feature.home.UnifiedHomeScreen
+import com.devwithguru.cricket.ui.feature.match.screens.CreateMatchScreen
+import com.devwithguru.cricket.ui.feature.tournament.CreateTournamentScreen
+import com.devwithguru.cricket.ui.feature.tournament.MyTournamentsScreen
+import com.devwithguru.cricket.ui.feature.tournament.TournamentHubScreen
+import com.devwithguru.cricket.ui.feature.team.TeamDetailScreen
+import com.devwithguru.cricket.ui.feature.match.toss.TossLineupScreen
+import com.devwithguru.cricket.ui.feature.match.toss.TossScreen
+import com.devwithguru.cricket.ui.feature.match.scorer.LiveScorerScreen
+import com.devwithguru.cricket.ui.feature.match.screens.MatchCenterScreen
+import com.devwithguru.cricket.ui.feature.player.PlayerProfileScreen
+import com.devwithguru.cricket.ui.feature.home.GlobalSearchScreen
+import com.devwithguru.cricket.ui.feature.match.screens.MatchEditorScreen
+import com.devwithguru.cricket.ui.feature.match.RecentMatchesScreen
+import com.devwithguru.cricket.domain.model.ScheduledFixture
+import com.devwithguru.cricket.ui.viewmodels.MainViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import dagger.hilt.android.AndroidEntryPoint
+import com.devwithguru.cricket.ui.feature.match.scorer.LiveScorerViewModel
 import com.devwithguru.cricket.ui.theme.CricketTheme
 import com.devwithguru.cricket.ui.navigation.Screen
 import com.devwithguru.cricket.ui.viewmodels.NavigationViewModel
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,7 +57,22 @@ class MainActivity : ComponentActivity() {
                     val navigationStack = navigationViewModel.navigationStack
                     var loggedInEmail by remember { mutableStateOf("") }
                     val scorerViewModel = remember { LiveScorerViewModel() }
+                    val mainViewModel: MainViewModel = hiltViewModel()
+                    val currentFixture by mainViewModel.currentFixture.collectAsState()
                     val context = LocalContext.current
+
+                    val msgNavigateMyTeams = stringResource(R.string.msg_navigate_my_teams)
+                    val msgLoggedOut = stringResource(R.string.msg_logged_out)
+                    val msgMatchSetupComplete = stringResource(R.string.msg_match_setup_complete)
+                    val msgMatchCompletedResultsSaved = stringResource(R.string.msg_match_completed_results_saved)
+
+                    // For formatted strings, we'll need to use context.getString in the lambda,
+                    // but maybe the lint rule allows it if we don't have another choice,
+                    // OR we can get the format string using stringResource and then format it.
+                    val msgLoggedInFormat = stringResource(R.string.msg_logged_in)
+                    val msgRegisteredFormat = stringResource(R.string.msg_registered)
+                    val msgCreatedTournamentFormat = stringResource(R.string.msg_created_tournament)
+                    val msgInningsCompleteFormat = stringResource(R.string.msg_innings_complete)
 
                     // Intercept system back button clicks dynamically
                     BackHandler(enabled = navigationStack.size > 1 && currentScreen != Screen.Home) {
@@ -64,7 +85,7 @@ class MainActivity : ComponentActivity() {
                                 onLoginSuccess = { email ->
                                     loggedInEmail = email
                                     navigationViewModel.clearAndNavigateTo(Screen.Home)
-                                    Toast.makeText(context, "Logged in as $email", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, String.format(msgLoggedInFormat, email), Toast.LENGTH_SHORT).show()
                                 },
                                 onNavigateToRegister = {
                                     navigationViewModel.navigateTo(Screen.Onboarding)
@@ -74,7 +95,7 @@ class MainActivity : ComponentActivity() {
                         Screen.Onboarding -> {
                             PlayerOnboardingScreen(
                                 onSubmitRegistration = { name, role, batting, bowling, city, bio ->
-                                    Toast.makeText(context, "Registered $name as $role", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(context, String.format(msgRegisteredFormat, name, role), Toast.LENGTH_LONG).show()
                                     navigationViewModel.clearAndNavigateTo(Screen.Home)
                                 },
                                 onNavigateBack = {
@@ -99,7 +120,7 @@ class MainActivity : ComponentActivity() {
                                     navigationViewModel.navigateTo(Screen.MyTournaments)
                                 },
                                 onNavigateToMyTeams = {
-                                    Toast.makeText(context, "Navigate: My Teams", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, msgNavigateMyTeams, Toast.LENGTH_SHORT).show()
                                 },
                                 onNavigateToPlayerProfile = {
                                     navigationViewModel.navigateTo(Screen.PlayerProfile("p1"))
@@ -119,7 +140,7 @@ class MainActivity : ComponentActivity() {
                                 onLogout = {
                                     loggedInEmail = ""
                                     navigationViewModel.clearAndNavigateTo(Screen.Login)
-                                    Toast.makeText(context, "Logged out successfully", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, msgLoggedOut, Toast.LENGTH_SHORT).show()
                                 }
                             )
                         }
@@ -138,7 +159,7 @@ class MainActivity : ComponentActivity() {
                         Screen.CreateTournament -> {
                             CreateTournamentScreen(
                                 onCreateTournamentSuccess = { name, city, season, start, end, ballType ->
-                                    Toast.makeText(context, "Created Tournament: $name in $city ($season) with $ballType Ball", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(context, String.format(msgCreatedTournamentFormat, name, city, season, ballType), Toast.LENGTH_LONG).show()
                                     if (navigationViewModel.currentScreen == Screen.CreateTournament) {
                                         navigationViewModel.navigateBack()
                                     }
@@ -217,19 +238,22 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         is Screen.TossLineup -> {
+                            LaunchedEffect(screen.matchId) { mainViewModel.loadFixture(screen.matchId) }
                             TossLineupScreen(
                                 homeTeamName = screen.homeTeam,
                                 awayTeamName = screen.awayTeam,
                                 tossWinner = screen.tossWinner,
                                 tossDecision = screen.tossDecision,
                                 onStartMatchSuccess = { winner, decision, homeLineup, awayLineup ->
-                                    // Ensure status is marked Live in FixtureStore
-                                    FixtureStore.fixtures.find { it.id == screen.matchId }?.let { f ->
+                                    // Update fixture status via ViewModel
+                                    val fixture = mainViewModel.getFixture(screen.matchId) ?: currentFixture?.takeIf { it.id == screen.matchId }
+                                    fixture?.let { f ->
                                         f.status = "Live"
                                         f.homeSquad = homeLineup
                                         f.awaySquad = awayLineup
+                                        mainViewModel.updateFixture(f)
                                     }
-                                    Toast.makeText(context, "Match Setup Completed. Starting scorer console.", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, msgMatchSetupComplete, Toast.LENGTH_SHORT).show()
                                     navigationViewModel.navigateTo(
                                         Screen.MatchCenter(
                                             matchId = screen.matchId,
@@ -247,6 +271,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         is Screen.MatchCenter -> {
+                            LaunchedEffect(screen.matchId) { mainViewModel.loadFixture(screen.matchId) }
                             MatchCenterScreen(
                                 matchId = screen.matchId,
                                 isScorer = screen.isScorer,
@@ -254,9 +279,11 @@ class MainActivity : ComponentActivity() {
                                 awaySquadList = screen.awaySquadList,
                                 scorerViewModel = scorerViewModel,
                                 onNavigateBack = {
-                                    FixtureStore.fixtures.find { it.id == screen.matchId }?.let { f ->
+                                    val fixture = mainViewModel.getFixture(screen.matchId) ?: currentFixture?.takeIf { it.id == screen.matchId }
+                                    fixture?.let { f ->
                                         if (f.status != "Completed") {
                                             f.status = "Live"
+                                            mainViewModel.updateFixture(f)
                                         }
                                     }
                                     if (navigationViewModel.currentScreen is Screen.MatchCenter) {
@@ -267,22 +294,23 @@ class MainActivity : ComponentActivity() {
                                     navigationViewModel.navigateTo(Screen.MatchEditor(screen.matchId))
                                 },
                                 onDeclareInnings = { runs, wickets, overs ->
-                                    FixtureStore.fixtures.find { it.id == screen.matchId }?.let { f ->
+                                    val fixture = mainViewModel.getFixture(screen.matchId) ?: currentFixture?.takeIf { it.id == screen.matchId }
+                                    fixture?.let { f ->
                                         if (f.currentInnings == 1) {
                                             // Transition to 2nd Innings
                                             f.currentInnings = 2
                                             f.firstInningsRuns = runs
                                             f.firstInningsWickets = wickets
-                                            
+
                                             // Reset score trackers for the 2nd Innings chase
                                             f.currentRuns = 0
                                             f.currentWickets = 0
                                             f.oversBowled = "0.0"
                                             f.strikerName = ""
                                             f.nonStrikerName = ""
-                                            
-                                            Toast.makeText(context, "1st Innings complete! Target set to ${runs + 1}. Starting 2nd Innings.", Toast.LENGTH_LONG).show()
-                                            
+
+                                            Toast.makeText(context, String.format(msgInningsCompleteFormat, runs + 1), Toast.LENGTH_LONG).show()
+
                                             // Update the current screen state in place on the stack to reflect the new innings parameters
                                             navigationViewModel.updateCurrentScreen(screen, screen.copy(isScorer = true))
                                         } else {
@@ -291,10 +319,12 @@ class MainActivity : ComponentActivity() {
                                             f.currentRuns = runs
                                             f.currentWickets = wickets
                                             f.oversBowled = overs
-                                            Toast.makeText(context, "Match completed! Results saved.", Toast.LENGTH_LONG).show()
+                                            Toast.makeText(context, msgMatchCompletedResultsSaved, Toast.LENGTH_LONG).show()
                                             // Pop back to Home
                                             navigationViewModel.clearAndNavigateTo(Screen.Home)
                                         }
+                                        // Persist fixture changes to Room
+                                        mainViewModel.updateFixture(f)
                                     }
                                 }
                             )

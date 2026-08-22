@@ -55,4 +55,51 @@ class ProfileController extends Controller
             'data' => $statsService->getPlayerInsights($playerProfile)
         ]);
     }
+
+    public function matches(PlayerProfile $playerProfile): JsonResponse
+    {
+        $matches = \App\Models\MatchPlayer::query()
+            ->where('player_profile_id', $playerProfile->id)
+            ->with(['match.tournament', 'match.fixture'])
+            ->latest()
+            ->get()
+            ->map(fn ($mp) => [
+                'id' => $mp->match?->id,
+                'tournament_name' => $mp->match->tournament?->name,
+                'opponent' => $mp->team_id === $mp->match?->home_team_id
+                    ? $mp->match->awayTeam?->name
+                    : $mp->match->homeTeam?->name,
+                'venue' => $mp->match->fixture?->venue,
+                'date' => $mp->match->fixture?->scheduled_at?->toDateString(),
+                'runs' => $mp->batting_runs,
+                'wickets' => $mp->bowling_wickets,
+                'overs_bowled' => $mp->bowling_overs,
+                'result' => $mp->match->result_summary,
+                'match_type' => $mp->match->tournament->cricketRuleProfile?->format,
+            ]);
+
+        return response()->json(['data' => $matches]);
+    }
+
+    public function teams(PlayerProfile $playerProfile): JsonResponse
+    {
+        $teams = \App\Models\TournamentPlayer::query()
+            ->where('player_profile_id', $playerProfile->id)
+            ->where('status', 'approved')
+            ->with(['team', 'tournament'])
+            ->get()
+            ->map(fn ($tp) => [
+                'team_id' => $tp->team_id,
+                'team_name' => $tp->team?->name,
+                'tournament_name' => $tp->tournament?->name,
+                'role' => $tp->playing_role,
+                'is_captain' => $tp->is_captain ?? false,
+                'matches_played' => \App\Models\MatchPlayer::query()
+                    ->where('player_profile_id', $playerProfile->id)
+                    ->where('team_id', $tp->team_id)
+                    ->count(),
+            ]);
+
+        return response()->json(['data' => $teams]);
+    }
 }

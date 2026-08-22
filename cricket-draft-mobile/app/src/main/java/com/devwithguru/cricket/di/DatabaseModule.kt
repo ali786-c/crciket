@@ -10,6 +10,8 @@ import com.devwithguru.cricket.data.db.dao.BowlerStatsDao
 import com.devwithguru.cricket.data.db.dao.FixtureDao
 import com.devwithguru.cricket.data.db.dao.InningsDao
 import com.devwithguru.cricket.data.db.dao.PartnershipEventDao
+import com.devwithguru.cricket.data.db.dao.TournamentDao
+import com.devwithguru.cricket.data.db.dao.TeamDao
 import com.devwithguru.cricket.data.db.dao.PlayerDao
 import com.devwithguru.cricket.data.db.dao.WicketEventDao
 import com.devwithguru.cricket.data.db.entity.PlayerEntity
@@ -22,6 +24,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import javax.inject.Named
 import javax.inject.Provider
 import javax.inject.Singleton
 
@@ -63,6 +66,14 @@ object DatabaseModule {
     @Provides fun provideBowlerStatsDao(db: CricketDatabase): BowlerStatsDao = db.bowlerStatsDao()
     @Provides fun provideWicketEventDao(db: CricketDatabase): WicketEventDao = db.wicketEventDao()
     @Provides fun providePartnershipEventDao(db: CricketDatabase): PartnershipEventDao = db.partnershipEventDao()
+    @Provides fun provideTournamentDao(db: CricketDatabase): TournamentDao = db.tournamentDao()
+    @Provides fun provideTeamDao(db: CricketDatabase): TeamDao = db.teamDao()
+    @Provides fun provideSyncStatusDao(db: CricketDatabase): com.devwithguru.cricket.data.db.dao.SyncStatusDao = db.syncStatusDao()
+    @Provides fun providePendingChangeDao(db: CricketDatabase): com.devwithguru.cricket.data.db.dao.PendingChangeDao = db.pendingChangeDao()
+
+    @Provides
+    @Named("auth_token")
+    fun provideAuthToken(authRepository: com.devwithguru.cricket.data.repository.AuthRepository): String? = authRepository.getToken()
 
     private fun defaultPlayers(): List<PlayerEntity> = listOf(
         PlayerEntity("h1", "Ahmed Ali", "Batter", true),

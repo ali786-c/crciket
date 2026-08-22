@@ -60,4 +60,33 @@
     <string name="match_type_test">Test</string>
     <string name="ball_type_tennis">Tennis</string>
     <string name="ball_type_leather">Leather</string>
+
+    <string name="month_jan">Jan</string>
+    <string name="month_feb">Feb</string>
+    <string name="month_mar">Mar</string>
+    <string name="month_apr">Apr</string>
+    <string name="month_may">May</string>
+    <string name="month_jun">Jun</string>
+    <string name="month_jul">Jul</string>
+    <string name="month_aug">Aug</string>
+    <string name="month_sep">Sep</string>
+    <string name="month_oct">Oct</string>
+    <string name="month_nov">Nov</string>
+    <string name="month_dec">Dec</string>
+
+    <string name="match_center_title">Match Center</string>
+    <string name="tab_scoring">Scoring</string>
+    <string name="tab_scorecard">Scorecard</string>
+    <string name="tab_stats">Stats</string>
+    <string name="tab_super_stars">Super Stars</string>
+    <string name="tab_summary">Summary</string>
+
+    <string name="msg_logged_in">Logged in as %1$s</string>
+    <string name="msg_registered">Registered %1$s as %2$s</string>
+    <string name="msg_navigate_my_teams">Navigate: My Teams</string>
+    <string name="msg_logged_out">Logged out successfully</string>
+    <string name="msg_created_tournament">Created Tournament: %1$s in %2$s (%3$s) with %4$s Ball</string>
+    <string name="msg_match_setup_complete">Match Setup Completed. Starting scorer console.</string>
+    <string name="msg_innings_complete">1st Innings complete! Target set to %1$d. Starting 2nd Innings.</string>
+    <string name="msg_match_completed_results_saved">Match completed! Results saved.</string>
 </resources>

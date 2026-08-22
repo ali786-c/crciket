@@ -8,6 +8,8 @@ import com.devwithguru.cricket.data.db.dao.BowlerStatsDao
 import com.devwithguru.cricket.data.db.dao.FixtureDao
 import com.devwithguru.cricket.data.db.dao.InningsDao
 import com.devwithguru.cricket.data.db.dao.PartnershipEventDao
+import com.devwithguru.cricket.data.db.dao.TournamentDao
+import com.devwithguru.cricket.data.db.dao.TeamDao
 import com.devwithguru.cricket.data.db.dao.PlayerDao
 import com.devwithguru.cricket.data.db.dao.WicketEventDao
 import com.devwithguru.cricket.data.db.entity.BatterStatsEntity
@@ -15,8 +17,14 @@ import com.devwithguru.cricket.data.db.entity.BowlerStatsEntity
 import com.devwithguru.cricket.data.db.entity.FixtureEntity
 import com.devwithguru.cricket.data.db.entity.InningsEntity
 import com.devwithguru.cricket.data.db.entity.PartnershipEventEntity
+import com.devwithguru.cricket.data.db.entity.TournamentEntity
+import com.devwithguru.cricket.data.db.entity.TeamEntity
 import com.devwithguru.cricket.data.db.entity.PlayerEntity
 import com.devwithguru.cricket.data.db.entity.WicketEventEntity
+import com.devwithguru.cricket.data.db.entity.SyncStatusEntity
+import com.devwithguru.cricket.data.db.entity.PendingChangeEntity
+import com.devwithguru.cricket.data.db.dao.SyncStatusDao
+import com.devwithguru.cricket.data.db.dao.PendingChangeDao
 
 @Database(
     entities = [
@@ -26,9 +34,13 @@ import com.devwithguru.cricket.data.db.entity.WicketEventEntity
         BatterStatsEntity::class,
         BowlerStatsEntity::class,
         WicketEventEntity::class,
-        PartnershipEventEntity::class
+        PartnershipEventEntity::class,
+        TournamentEntity::class,
+        TeamEntity::class,
+        SyncStatusEntity::class,
+        PendingChangeEntity::class
     ],
-    version = 1,
+    version = 3,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -40,4 +52,8 @@ abstract class CricketDatabase : RoomDatabase() {
     abstract fun bowlerStatsDao(): BowlerStatsDao
     abstract fun wicketEventDao(): WicketEventDao
     abstract fun partnershipEventDao(): PartnershipEventDao
+    abstract fun tournamentDao(): TournamentDao
+    abstract fun teamDao(): TeamDao
+    abstract fun syncStatusDao(): SyncStatusDao
+    abstract fun pendingChangeDao(): PendingChangeDao
 }

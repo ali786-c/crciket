@@ -9,11 +9,11 @@ import com.devwithguru.cricket.data.db.dao.WicketEventDao
 import com.devwithguru.cricket.data.db.entity.InningsEntity
 import com.devwithguru.cricket.data.mapper.toDomain
 import com.devwithguru.cricket.data.mapper.toEntity
-import com.devwithguru.cricket.ui.screens.ScheduledFixture
-import com.devwithguru.cricket.ui.screens.match.BatterState
-import com.devwithguru.cricket.ui.screens.match.BowlerState
-import com.devwithguru.cricket.ui.screens.match.PartnershipEvent
-import com.devwithguru.cricket.ui.screens.match.WicketEvent
+import com.devwithguru.cricket.domain.model.ScheduledFixture
+import com.devwithguru.cricket.domain.model.BatterState
+import com.devwithguru.cricket.domain.model.BowlerState
+import com.devwithguru.cricket.domain.model.PartnershipEvent
+import com.devwithguru.cricket.domain.model.WicketEvent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map

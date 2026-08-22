@@ -3,7 +3,7 @@ package com.devwithguru.cricket.data.repository
 import com.devwithguru.cricket.data.db.dao.PlayerDao
 import com.devwithguru.cricket.data.mapper.toDomain
 import com.devwithguru.cricket.data.mapper.toEntity
-import com.devwithguru.cricket.ui.screens.RegisteredPlayer
+import com.devwithguru.cricket.domain.model.RegisteredPlayer
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map

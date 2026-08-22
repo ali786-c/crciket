@@ -24,6 +24,22 @@ data class FixtureEntity(
     val nonStrikerName: String = "",
     val bowlerName: String = "",
     val currentInnings: Int = 1,
-    val homeSquad: String = "[]",   // JSON serialized List<String>
-    val awaySquad: String = "[]"    // JSON serialized List<String>
+    val homeSquad: String = "[]",        // JSON serialized List<String>
+    val awaySquad: String = "[]",        // JSON serialized List<String>
+    val firstInningsRuns: Int? = null,
+    val firstInningsWickets: Int? = null,
+    val firstInningsBatsmen: String = "[]",   // JSON serialized List<BatterState>
+    val firstInningsBowlers: String = "[]",   // JSON serialized List<BowlerState>
+    val secondInningsBatsmen: String = "[]",
+    val secondInningsBowlers: String = "[]",
+    val firstInningsFOW: String = "[]",       // JSON serialized List<WicketEvent>
+    val firstInningsPartnerships: String = "[]",
+    val secondInningsFOW: String = "[]",
+    val secondInningsPartnerships: String = "[]",
+    val activePartnershipRuns: Int = 0,
+    val activePartnershipBalls: Int = 0,
+    val firstInningsExtras: Int = 0,
+    val secondInningsExtras: Int = 0,
+    val firstInningsDotBalls: Int = 0,
+    val secondInningsDotBalls: Int = 0
 )

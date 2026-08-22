@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class PlayerProfile extends Model
 {
@@ -14,6 +15,7 @@ class PlayerProfile extends Model
     protected $fillable = [
         'user_id',
         'full_name',
+        'unique_code',
         'phone',
         'city',
         'playing_role',
@@ -27,6 +29,32 @@ class PlayerProfile extends Model
     protected function casts(): array
     {
         return ['is_active' => 'boolean'];
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (PlayerProfile $profile) {
+            if (empty($profile->unique_code)) {
+                $profile->unique_code = self::generateUniqueCode();
+            }
+        });
+    }
+
+    public static function generateUniqueCode(): string
+    {
+        do {
+            $code = 'PLR-' . strtoupper(Str::random(5));
+        } while (static::where('unique_code', $code)->exists());
+
+        return $code;
+    }
+
+    /**
+     * Find a player by their unique code.
+     */
+    public static function findByCode(string $code): ?static
+    {
+        return static::where('unique_code', $code)->first();
     }
 
     public function user(): BelongsTo

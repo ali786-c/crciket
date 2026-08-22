@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Str;
 
 class Team extends Model
 {
@@ -16,6 +17,7 @@ class Team extends Model
         'tournament_id',
         'name',
         'short_name',
+        'unique_code',
         'logo_path',
         'display_order',
         'is_active',
@@ -24,6 +26,32 @@ class Team extends Model
     protected function casts(): array
     {
         return ['is_active' => 'boolean'];
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (Team $team) {
+            if (empty($team->unique_code)) {
+                $team->unique_code = self::generateUniqueCode();
+            }
+        });
+    }
+
+    public static function generateUniqueCode(): string
+    {
+        do {
+            $code = 'TEAM-' . strtoupper(Str::random(5));
+        } while (static::where('unique_code', $code)->exists());
+
+        return $code;
+    }
+
+    /**
+     * Find a team by its unique code.
+     */
+    public static function findByCode(string $code): ?static
+    {
+        return static::where('unique_code', $code)->first();
     }
 
     public function tournament(): BelongsTo
